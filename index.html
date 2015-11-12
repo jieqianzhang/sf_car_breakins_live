@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset=urf-8/>
+        <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=yes' />
+        <title>San Francisco Car Break-ins Crime Map</title>
+        <link rel='stylesheet' href='http://libs.cartocdn.com/cartodb.js/v3/3.11/themes/css/cartodb.css' />
+        <script src='http://libs.cartocdn.com/cartodb.js/v3/3.11/cartodb.js'></script>
+        <script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
+
+    </head>
+    
+    <style>
+        body {margin:0; padding:0;}
+        #map {position:absolute; top:0; bottom:0; width:100%;}
+        #control {position: absolute; top: 5px; right:10px; color:white; font-family:Georgia; font-size:small; padding-left: 20px; padding-right: 20px; background-color: rgba(0,0,0, 0.5); }
+    </style>
+    
+    <body>
+        <div id='map'></div>
+        
+        <script>
+            
+             // get geolocation from the web-browser
+            navigator.geolocation.getCurrentPosition(GetLocation);
+                function GetLocation(location) {
+                var lat = location.coords.latitude;
+                var long = location.coords.longitude;
+           
+            var map = new L.map('map').setView([37.77, -122.41], 13);  
+            L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', {
+        attribution: '<a href="http://www.mapbox.com/about/maps/" target="_blank">Terms &amp; Feedback</a>'
+        }).addTo(map);
+            
+            var layerUrl = "https://jqzhang.cartodb.com/api/v2/viz/e7772b8a-8830-11e5-b0c3-0e3ff518bd15/viz.json";
+            
+            var sublayers = [];
+            
+            cartodb.createLayer(map, layerUrl)
+            .addTo(map)
+            .on('done', function(layer) {
+            
+            var v = cdb.vis.Overlay.create('search', map.viz, {})
+            v.show();
+            $('#map').append(v.render().el);
+            
+            // filter not working yet...
+            var sql = new cartodb.SQL({ user: 'jqzhang' });
+            
+            sql.execute("SELECT * FROM yvry WHERE date ILIKE '%2015%'")
+            .done(function(data) {
+            console.log(data.rows);
+            })
+            .error(function(errors) {
+            // errors contains a list of errors
+            console.log("errors:" + errors);
+            })
+            
+
+            });
+        
+
+                    
+            
+                    
+                    
+            
+            
+            
+           
+                    
+                
+ };
+            
+
+                
+
+    </script>
+
+       
+    </body>
+</html>
