@@ -33,82 +33,192 @@ body {
     padding-right: 20px;
     background-color: rgba(0, 0, 0, 0.5);
 }
+
+#or{
+    color:white;
+    position: absolute;
+    top: 40px;
+    right: 0px;
+    width: 100px;
+    height: 50px;
+    background: transparent;
+    z-index: 10;
+    font: bold 13px "Helvetica", Arial;
+   /* text-shadow:2px 2px 2px white, -2px -2px 2px white, ;*/
+}
+
+#bkcard{
+    background-color: black;
+    opacity: 0.7;
+    border-radius: 5px;
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    width: 165px;
+    height: 130px;
+    z-index: 9;
+}
+
+#menu {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+    width: 900px;
+    height: 50px;
+    background: transparent;
+    z-index: 10;
+}
+
+#menu a {
+    margin: 15px 10px 0 0;
+    float: right;
+    vertical-align: baseline;
+    width: 125px;
+    padding: 8px;
+    text-align: center;
+    font: bold 11px "Helvetica", Arial;
+    line-height: normal;
+    color: #555;
+    border-radius: 4px;
+    border: 1px solid #777777;
+    background: #ffffff;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#menu a.selected,
+#menu a:hover {
+    color: steelblue;
+}
+
+.leaflet-clickable {
+    fill: steelblue;
+    stroke: steelblue;
+}
 </style>
 
 <body>
     <div id='map'></div>
+    <div id="bkcard"></div>
+        <div id="or">
+            <p>or</p>
+        </div>
+
+        <div id='menu'>
+            <a href="" id="detect" value="" class="">FIND CAR BREAK-INS AROUND YOU</a>
+        </div>
     <script>
+    var map = new L.map('map').setView([37.77, -122.41], 12);
+    L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', {
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    cartodb.createLayer(map, {
+            user_name: "jqzhang",
+            type: 'cartodb',
+            sublayers: [{
+                sql: "SELECT * FROM sf_planning_neighborhoods",
+                cartocss: '#sf_planning_neighborhood {polygon-fill: #5CA2D1; polygon-opacity: 0.6; line-color: #FFF; line-width: 1.5; line-opacity: 1;}',
+
+            }]
+        })
+        .addTo(map, 0);
+
+
+    var sublayer;
+
+    cartodb.createLayer(map, {
+            user_name: "jqzhang",
+            type: 'cartodb',
+            sublayers: [{
+                sql: "SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year' ORDER BY incdate DESC",
+                cartocss: '#yvry {marker-fill: red; marker-width: 5; marker-line-color: #FFF; marker-line-width: .5; opacity: .6; }',
+
+            }]
+        })
+        .addTo(map)
+        .done(function(layer) {
+            var v = cdb.vis.Overlay.create('search', map.viz, {})
+            v.show();
+            $('#map').append(v.render().el);
+            sublayer = layer.getSubLayer(0);
+            detectUserLocation();
+        }).on('error', function() {
+            //log the error
+        });
+
+
+
     // get geolocation from the web-browser
-    function main() {
-
-        navigator.geolocation.getCurrentPosition(GetLocation);
-
-        function GetLocation(location) {
-
-            var map = new L.map('map').setView([37.77, -122.41], 12);
-            L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', {
-                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            }).addTo(map);
-
-            var lat = location.coords.latitude;
-            var lon = location.coords.longitude;
-
-            // draw a marker based on user's current location 
-            var marker = L.marker([lat, lon]).addTo(map);
-
-            // marker.style.background-color = "red";
-
-            var sublayer;
-
-            cartodb.createLayer(map, {
-                    user_name: "jqzhang",
-                    type: 'cartodb',
-                    sublayers: [{
-                        sql: "SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year' ORDER BY incdate DESC",
-                        cartocss: '#yvry {marker-fill: red; marker-width: 5; marker-line-color: #FFF; marker-line-width: .5; opacity: .6; }',
-                        interactivity:"cartodb_id, latitude, longitude",
-
-                    }]
-                })
-                .addTo(map)
-                .done(function(layer) {
-                    var v = cdb.vis.Overlay.create('search', map.viz, {})
-                    v.show();
-                    $('#map').append(v.render().el);
-                    sublayer = layer.getSubLayer(0);
-                    sublayer.setInteraction(true);
-                    addCursorInteraction(sublayer);
-
-                });
-
-
-            // var sublayers = [];
-
-            // cartodb.createLayer(map, layerUrl)
-            // .addTo(map)
-            // .on('done', function(layer) {
-
-            // var v = cdb.vis.Overlay.create('search', map.viz, {})
-            // v.show();
-            // $('#map').append(v.render().el);
-
-            // // filter not working yet...
-            // var sql = new cartodb.SQL({ user: 'jqzhang' });
-
-            // sql.execute("SELECT * FROM yvry WHERE date ILIKE '%2015%'")
-            // .done(function(data) {
-            // console.log(data.rows);
-            // })
-            // .error(function(errors) {
-            // // errors contains a list of errors
-            // console.log("errors:" + errors);
-            // })
-
-        };
-
+    function mapToPosition(position) {
+        lon = position.coords.longitude;
+        lat = position.coords.latitude;
+        // updateQuery();
+        map.setView(new L.LatLng(lat, lon), 12);
+        new L.CircleMarker([lat, lon], {
+            radius: 10
+        }).addTo(map);
     };
 
-    window.onload = main;
+
+    function detectUserLocation() {
+        if (navigator.geolocation) {
+            var timeoutVal = 10 * 1000 * 1000;
+            navigator.geolocation.watchPosition(
+                mapToPosition,
+                alertError, {
+                    enableHighAccuracy: true,
+                    timeout: timeoutVal,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by this browser");
+        }
+
+        function alertError(error) {
+            var errors = {
+                1: 'Permission denied',
+                2: 'Position unavailable',
+                3: 'Request timeout'
+            };
+            alert("Error: " + errors[error.code]);
+        }
+    };
+
+
+
+
+
+
+
+
+
+    // var layerUrl = "https://jqzhang.cartodb.com/api/v2/viz/ca3b1ad8-8b3f-11e5-9d5d-0e5db1731f59/viz.json";
+
+    // cartodb.createLayer(map,layerUrl)
+    //     .addTo(map)
+    //     .on('done', function(layer) {
+    //     }).on('error', function() {
+    // //log the error
+    //     });
+
+
+
+
+
+    // var lon,
+    //     lat;
+
+    // function updateQuery() {
+    //     sublayers[0].set({
+    //         sql: "WITH cities AS (SELECT cartodb_id, the_geom, the_geom_webmercator, name FROM ne_10m_populated_p_2 ORDER BY the_geom <-> ST_SetSRID(ST_MakePoint(" + lon + "," + lat + "),4326) ASC LIMIT " + total + ") SELECT null as cartodb_id, ST_MakeLine(ST_Transform(ST_SetSRID(ST_MakePoint(" + lon + "," + lat + "),4326),3857),the_geom_webmercator) as the_geom_webmercator, null as name FROM cities UNION ALL SELECT cartodb_id, the_geom_webmercator, name FROM cities",
+    //         cartocss: "#yvry {[mapnik-geometry-type = 1]{text-name: [name]; text-face-name: 'DejaVu Sans Book'; text-size: 12; text-fill: #000; text-allow-overlap: false; text-halo-fill: #FFF; text-halo-radius: 2;} [mapnik-geometry-type = 2]{line-color: white; line-opacity: 0.5;} } "
+    //     });
+    // }
+
+
+    // window.onload = main;
     </script>
 </body>
 
