@@ -107,22 +107,9 @@ body {
     </div>
     <script>
     var map = new L.map('map').setView([37.77, -122.41], 12);
-    L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.png', {
+    L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
         attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
-
-
-    // Next step: calculate the number of incidents within each neighborhood using ST_Intersects
-    // cartodb.createLayer(map, {
-    //         user_name: "jqzhang",
-    //         type: 'cartodb',
-    //         sublayers: [{
-    //             sql: "SELECT * FROM sf_planning_neighborhoods",
-    //             cartocss: '#sf_planning_neighborhood {polygon-fill: #5CA2D1; polygon-opacity: 0.6; line-color: #FFF; line-width: 1.5; line-opacity: 1;}',
-
-    //         }]
-    //     })
-    //     .addTo(map, 0);
 
 
     var sublayer;
@@ -131,13 +118,8 @@ body {
             user_name: "jqzhang",
             type: 'cartodb',
             sublayers: [{
-                sql: "SELECT neighborhoods_areas.the_geom_webmercator,neighborhoods_areas.neighborho, count(yvry.the_geom_webmercator)/neighborhoods_areas.area*10000 AS rate FROM neighborhoods_areas, yvry WHERE ST_Contains(neighborhoods_areas.the_geom_webmercator, yvry.the_geom_webmercator) GROUP BY neighborhoods_areas.the_geom_webmercator, neighborhoods_areas.neighborho, neighborhoods_areas.area",
-                // cartocss: "#yvry {polygon-fill:red;polygon-opacity: 0.6; }",
-                cartocss: '#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[rate<=27.1460451278821]{polygon-fill: #B10026;}#yvry[rate<=14.2880527294495]{polygon-fill: #E31A1C;}#yvry[rate<=4.88127862050845]{polygon-fill: #FC4E2A;}#yvry[rate<=2.76996504582185]{polygon-fill: #FD8D3C;}#yvry[rate<=1.56552346342556]{polygon-fill: #FEB24C;}#yvry[rate<=1.21887660679717]{polygon-fill: #FED976;}#yvry[rate<=1.01702817810467]{polygon-fill: #FFFFB2;}',
-
-                // sql: "SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year' ORDER BY incdate DESC",
-                // cartocss: '#yvry {marker-fill: red; marker-width: 5; marker-line-color: #FFF; marker-line-width: .5; opacity: .6; }',
-
+                sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') SELECT neighborhoods_areas.the_geom_webmercator,neighborhoods_areas.neighborho, count(crimes.the_geom_webmercator)/neighborhoods_areas.area*10000 AS rate FROM neighborhoods_areas, crimes WHERE ST_Contains(neighborhoods_areas.the_geom_webmercator, crimes.the_geom_webmercator) GROUP BY neighborhoods_areas.the_geom_webmercator, neighborhoods_areas.neighborho, neighborhoods_areas.area",
+                cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[rate<=13.4502033352671]{polygon-fill: #B10026;}#yvry[rate<=7.96100602097922]{polygon-fill: #E31A1C;}#yvry[rate<=2.24165005995164]{polygon-fill: #FC4E2A;}#yvry[rate<=1.48236717330872]{polygon-fill: #FD8D3C;}#yvry[rate<=0.734503065922202]{polygon-fill: #FEB24C;}#yvry[rate<=0.620246533008774]{polygon-fill: #FED976;}#yvry[rate<=0.447005419095189]{polygon-fill: #FFFFB2;}",
             }]
         })
         .addTo(map)
@@ -151,6 +133,18 @@ body {
             //log the error
         });
 
+
+
+    // cartodb.createLayer(map, {
+    //         user_name: "jqzhang",
+    //         type: 'cartodb',
+    //         sublayers: [{
+    //             sql: "SELECT * FROM sf_planning_neighborhoods",
+    //             cartocss: '#sf_planning_neighborhood {polygon-fill: #5CA2D1; polygon-opacity: 0.6; line-color: #FFF; line-width: 1.5; line-opacity: 1;}',
+
+    //         }]
+    //     })
+    //     .addTo(map, 0);
 
 
     // get geolocation from the web-browser
@@ -193,17 +187,17 @@ body {
 
 
 
-    var lon,
-        lat;
+    // var lon,
+    //     lat;
 
-    function updateQuery() {
-        sublayer.set({
+    // function updateQuery() {
+    //     sublayer.set({
 
-            sql: "SELECT ST_Transform( ST_Buffer(the_geom::geography, 1*1609)::geometry,3857) As the_geom_webmercator,CDB_LatLng(lat,lon) FROM yvry",
+    //         sql: "SELECT ST_Transform( ST_Buffer(the_geom::geography, 1*1609)::geometry,3857) As the_geom_webmercator,CDB_LatLng(lat,lon) FROM yvry",
 
-            // cartocss: "#yvry {[mapnik-geometry-type = 1]{text-name: [name]; text-face-name: 'DejaVu Sans Book'; text-size: 12; text-fill: #000; text-allow-overlap: false; text-halo-fill: #FFF; text-halo-radius: 2;} [mapnik-geometry-type = 2]{line-color: white; line-opacity: 0.5;} } "
-        });
-    }
+    //         // cartocss: "#yvry {[mapnik-geometry-type = 1]{text-name: [name]; text-face-name: 'DejaVu Sans Book'; text-size: 12; text-fill: #000; text-allow-overlap: false; text-halo-fill: #FFF; text-halo-radius: 2;} [mapnik-geometry-type = 2]{line-color: white; line-opacity: 0.5;} } "
+    //     });
+    // }
 
 
     // window.onload = main;
