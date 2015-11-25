@@ -1,0 +1,12 @@
+SELECT sf_planning_neighborhoods.the_geom,sf_planning_neighborhoods.neighborho, count(yvry.the_geom) AS totale 
+FROM sf_planning_neighborhoods, yvry 
+WHERE ST_Contains(sf_planning_neighborhoods.the_geom, yvry.the_geom)
+GROUP BY sf_planning_neighborhoods.the_geom, sf_planning_neighborhoods.neighborho
+
+
+
+
+SELECT neighborhoods_areas.the_geom_webmercator,neighborhoods_areas.neighborho, (count(yvry.the_geom_webmercator))/neighborhoods_areas.area*10000 AS rate
+FROM neighborhoods_areas, yvry 
+WHERE ST_Contains(neighborhoods_areas.the_geom_webmercator, yvry.the_geom_webmercator)
+GROUP BY neighborhoods_areas.the_geom_webmercator, neighborhoods_areas.neighborho, neighborhoods_areas.area
