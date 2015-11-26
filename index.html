@@ -119,7 +119,7 @@ body {
             type: 'cartodb',
             sublayers: [{
                 sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') SELECT neighborhoods_areas.the_geom_webmercator,neighborhoods_areas.neighborho, count(crimes.the_geom_webmercator)/neighborhoods_areas.area*10000 AS rate FROM neighborhoods_areas, crimes WHERE ST_Contains(neighborhoods_areas.the_geom_webmercator, crimes.the_geom_webmercator) GROUP BY neighborhoods_areas.the_geom_webmercator, neighborhoods_areas.neighborho, neighborhoods_areas.area",
-                cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[rate<=13.4502033352671]{polygon-fill: #B10026;}#yvry[rate<=7.96100602097922]{polygon-fill: #E31A1C;}#yvry[rate<=2.24165005995164]{polygon-fill: #FC4E2A;}#yvry[rate<=1.48236717330872]{polygon-fill: #FD8D3C;}#yvry[rate<=0.734503065922202]{polygon-fill: #FEB24C;}#yvry[rate<=0.620246533008774]{polygon-fill: #FED976;}#yvry[rate<=0.447005419095189]{polygon-fill: #FFFFB2;}",
+                cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[rate<=13.4502033352671]{polygon-fill: #7a0177;}#yvry[rate<=7.96100602097922]{polygon-fill: #ae017e;}#yvry[rate<=2.24165005995164]{polygon-fill: #dd3497;}#yvry[rate<=1.48236717330872]{polygon-fill: #f768a1;}#yvry[rate<=0.734503065922202]{polygon-fill: #fa9fb5;}#yvry[rate<=0.620246533008774]{polygon-fill: #fcc5c0;}#yvry[rate<=0.447005419095189]{polygon-fill: #feebe2;}",
             }]
         })
         .addTo(map)
@@ -135,16 +135,18 @@ body {
 
 
 
-    // cartodb.createLayer(map, {
-    //         user_name: "jqzhang",
-    //         type: 'cartodb',
-    //         sublayers: [{
-    //             sql: "SELECT * FROM sf_planning_neighborhoods",
-    //             cartocss: '#sf_planning_neighborhood {polygon-fill: #5CA2D1; polygon-opacity: 0.6; line-color: #FFF; line-width: 1.5; line-opacity: 1;}',
+    cartodb.createLayer(map, {
+            user_name: "jqzhang",
+            type: 'cartodb',
+            sublayers: [{
+                sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer((CDB_LatLng(37.779272, -122.4193494))::geography,100)::geometry AS the_geom) SELECT COUNT(cartodb_id)/(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)",
+                cartocss: '#buffer{polygon-fill:#000;}',
 
-    //         }]
-    //     })
-    //     .addTo(map, 0);
+            }]
+        })
+        .addTo(map, 0);
+
+        
 
 
     // get geolocation from the web-browser
