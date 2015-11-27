@@ -8,6 +8,8 @@
     <link rel='stylesheet' href='http://libs.cartocdn.com/cartodb.js/v3/3.11/themes/css/cartodb.css' />
     <script src='http://libs.cartocdn.com/cartodb.js/v3/3.11/cartodb.js'></script>
     <script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="gauge.js"></script>
 </head>
 <style>
 body {
@@ -94,17 +96,38 @@ body {
     fill: orange;
     stroke: orange;
 }
+
+#map{
+    z-index: -1;
+}
+
+#cityGaugeContainer{
+    position:absolute;
+    right:20px;
+    top:80px;
+}
+
+#districtGaugeContainer{
+    position:absolute;
+    right:20px;
+    top:200px;
+}
+
+
 </style>
 
-<body>
+<body onload="initialize()">
+    <div id="cityGaugeContainer"></div>
+    <div id="districtGaugeContainer"></div>
+
     <div id='map'></div>
-    <div id="bkcard"></div>
+    <!-- <div id="bkcard"></div>
     <div id="or">
         <p>or</p>
     </div>
     <div id='menu'>
         <a href="" id="detect" value="" class="">FIND CAR BREAK-INS AROUND YOU</a>
-    </div>
+    </div> -->
     <script>
     var map = new L.map('map').setView([37.77, -122.41], 12);
     L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
@@ -146,7 +169,7 @@ body {
         })
         .addTo(map, 0);
 
-        
+
 
 
     // get geolocation from the web-browser
@@ -189,20 +212,62 @@ body {
 
 
 
-    // var lon,
-    //     lat;
-
-    // function updateQuery() {
-    //     sublayer.set({
-
-    //         sql: "SELECT ST_Transform( ST_Buffer(the_geom::geography, 1*1609)::geometry,3857) As the_geom_webmercator,CDB_LatLng(lat,lon) FROM yvry",
-
-    //         // cartocss: "#yvry {[mapnik-geometry-type = 1]{text-name: [name]; text-face-name: 'DejaVu Sans Book'; text-size: 12; text-fill: #000; text-allow-overlap: false; text-halo-fill: #FFF; text-halo-radius: 2;} [mapnik-geometry-type = 2]{line-color: white; line-opacity: 0.5;} } "
-    //     });
-    // }
+    // </script>
 
 
-    // window.onload = main;
+    <!-- ********************************************************************************************************************************************************************************************************* Draw the two gauges *********************************************************************************************************-->
+
+    <script>
+
+    var gauges = [];
+            
+            function createGauge(name, label, min, max)
+            {
+                var config = 
+                {
+                    size: 120,
+                    label: label,
+                    min: undefined != min ? min : 0,
+                    max: undefined != max ? max : 100,
+                    minorTicks: 5
+                }
+                
+                var range = config.max - config.min;
+                config.yellowZones = [{ from: config.min + range*0.75, to: config.min + range*0.9 }];
+                config.redZones = [{ from: config.min + range*0.9, to: config.max }];
+                
+                gauges[name] = new Gauge(name + "GaugeContainer", config);
+                gauges[name].render();
+            }
+            
+            function createGauges()
+            {
+                createGauge("city", "City");
+                createGauge("district", "District");
+            }
+            
+            function updateGauges()
+            {
+                for (var key in gauges)
+                {
+                    var value = getRandomValue(gauges[key])
+                    gauges[key].redraw(value);
+                }
+            }
+            
+            function getRandomValue(gauge)
+            {
+                var overflow = 0; //10;
+                return gauge.config.min - overflow + (gauge.config.max - gauge.config.min + overflow*2) *  Math.random();
+            }
+            
+            function initialize()
+            {
+                createGauges();
+                setInterval(updateGauges, 5000);
+            }
+        
+  
     </script>
 </body>
 
