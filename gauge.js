@@ -41,7 +41,6 @@ function Gauge(placeholderName, configuration)
 					.attr("cy", this.config.cy)
 					.attr("r", this.config.raduis)
 					.style("fill", "#ccc")
-					.style("stroke", "#000")
 					.style("stroke-width", "0.5px");
 					
 		this.body.append("svg:circle")
@@ -108,7 +107,7 @@ function Gauge(placeholderName, configuration)
 						.attr("y1", point1.y)
 						.attr("x2", point2.x)
 						.attr("y2", point2.y)
-						.style("stroke", "#333")
+						.style("stroke", "grey")
 						.style("stroke-width", "2px");
 			
 			if (major == this.config.min || major == this.config.max)
@@ -122,7 +121,7 @@ function Gauge(placeholderName, configuration)
 				 			.attr("text-anchor", major == this.config.min ? "start" : "end")
 				 			.text(major)
 				 			.style("font-size", fontSize + "px")
-							.style("fill", "#333")
+							.style("fill", "grey")
 							.style("stroke-width", "0px");
 			}
 		}
@@ -143,16 +142,16 @@ function Gauge(placeholderName, configuration)
 							.enter()
 								.append("svg:path")
 									.attr("d", pointerLine)
-									.style("fill", "#dc3912")
-									.style("stroke", "#c63310")
-									.style("fill-opacity", 0.7)
+									.style("fill", "grey")
+									// .style("stroke", "#c63310")
+									.style("fill-opacity", 1)
 					
 		pointerContainer.append("svg:circle")
 							.attr("cx", this.config.cx)
 							.attr("cy", this.config.cy)
 							.attr("r", 0.12 * this.config.raduis)
-							.style("fill", "#4684EE")
-							.style("stroke", "#666")
+							.style("fill", "grey")
+							// .style("stroke", "#666")
 							.style("opacity", 1);
 		
 		var fontSize = Math.round(this.config.size / 10);
@@ -201,6 +200,7 @@ function Gauge(placeholderName, configuration)
 		
 		this.body.append("svg:path")
 					.style("fill", color)
+					.style("opacity",.8)
 					.attr("d", d3.svg.arc()
 						.startAngle(this.valueToRadians(start))
 						.endAngle(this.valueToRadians(end))
@@ -252,7 +252,7 @@ function Gauge(placeholderName, configuration)
 	this.valueToPoint = function(value, factor)
 	{
 		return { 	x: this.config.cx - this.config.raduis * factor * Math.cos(this.valueToRadians(value)),
-					y: this.config.cy - this.config.raduis * factor * Math.sin(this.valueToRadians(value)) 		};
+					y: this.config.cy - this.config.raduis * factor * Math.sin(this.valueToRadians(value)) };
 	}
 	
 	// initialization
