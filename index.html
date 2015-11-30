@@ -100,9 +100,10 @@ div.cartodb-searchbox {
     color: steelblue;
 }
 
-.leaflet-clickable {
-    fill: orange;
-    stroke: orange;
+path.leaflet-clickable {
+    fill: black;
+    stroke: black;
+    opacity: 1;
 }
 
 #map {
@@ -203,7 +204,7 @@ div.cartodb-searchbox {
         // updateQuery();
         map.setView(new L.LatLng(lat, lon), 15);
         new L.CircleMarker([lat, lon], {
-            radius: 1
+            radius: 5
         }).addTo(map);
 
         //create a buffer
