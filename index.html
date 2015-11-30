@@ -10,8 +10,6 @@
     <script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
     <link href='https://fonts.googleapis.com/css?family=Roboto:400,500' rel='stylesheet' type='text/css'>
     <script type="text/javascript" src="gauge.js"></script>
-  
-
 </head>
 <style>
 body {
@@ -39,47 +37,35 @@ body {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-#or {
-    color: white;
-    position: absolute;
-    top: 40px;
-    right: 0px;
-    width: 100px;
-    height: 50px;
-    background: transparent;
-    z-index: 10;
-    font: bold 13px "Helvetica", Arial;
-}
-
 #bkcard {
-    background-color: rgba(0,0,0, .8);
+    background-color: rgba(0, 0, 0, .8);
     /*border-radius: 5px;*/
     position: absolute;
-    right:0px;
+    right: 0px;
     width: 350px;
     height: 100%;
     z-index: 0;
-    color:white;
+    color: white;
 }
 
-#bkcard h2{
-    color:white;
+#bkcard h2 {
+    color: white;
     padding-left: 20px;
     margin-bottom: 0px;
 }
 
-#bkcard p{
-    color:white;
+#bkcard p {
+    color: white;
     font-size: 12px;
     padding-left: 20px;
     padding-top: 0px;
 }
 
-div.cartodb-searchbox{
-    position:absolute;
-    top:90px;
-    left:20px;
-    z-index:99 !important;
+div.cartodb-searchbox {
+    position: absolute;
+    top: 90px;
+    left: 20px;
+    z-index: 99 !important;
 }
 
 #menu {
@@ -119,48 +105,40 @@ div.cartodb-searchbox{
     stroke: orange;
 }
 
-#map{
+#map {
     z-index: -1;
 }
 
-#cityGaugeContainer{
-    position:absolute;
-    left:20px;
-    top:180px;
+#cityGaugeContainer {
+    position: absolute;
+    left: 20px;
+    top: 180px;
     z-index: 1;
 }
 
-#districtGaugeContainer{
-    position:absolute;
-    left:20px;
-    top:300px;
+#districtGaugeContainer {
+    position: absolute;
+    left: 20px;
+    top: 300px;
     z-index: 1;
 }
-
-
-
 
 </style>
-
 <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
-
 <body onload="initialize()">
-
-   <div id='map'></div>
+    <div id='map'></div>
     <div id="bkcard">
-       <h2>San Francisco Car Break-ins</h2> 
-       <!-- <p>By Jieqian Zhang</p> -->
-       <p>Live crime data of the past one year from San Francisco Police Department (updated daily)</p>
+        <h2>San Francisco Car Break-ins</h2>
+        <!-- <p>By Jieqian Zhang</p> -->
+        <p>Live crime data of the past one year from San Francisco Police Department (updated daily)</p>
         <div id='menu' onclick="detectUserLocation()">
             <a id="detect">FIND BREAK-INS AROUND YOU</a>
         </div>
         <div id="cityGaugeContainer"></div>
         <div id="districtGaugeContainer"></div>
     </div>
-  
-    
     <script>
     var map = new L.map('map').setView([37.77, -122.41], 12);
     // L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
@@ -191,21 +169,8 @@ div.cartodb-searchbox{
 
 
 
-    //create a buffer
-
-    cartodb.createLayer(map, {
-            user_name: "jqzhang",
-            type: 'cartodb',
-            sublayers: [{
-                sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer((CDB_LatLng(37.779272, -122.4193494))::geography,100)::geometry AS the_geom) SELECT COUNT(cartodb_id)/(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)",
-                cartocss: '#buffer{polygon-fill:#000;}',
-
-            }]
-        })
-        .addTo(map, 0);
 
 
-    
     // get geolocation from the web-browser
     function mapToPosition(position) {
         lon = position.coords.longitude;
@@ -213,9 +178,19 @@ div.cartodb-searchbox{
         // updateQuery();
         map.setView(new L.LatLng(lat, lon), 15);
         new L.CircleMarker([lat, lon], {
-            radius: 10
+            radius: 1
         }).addTo(map);
-        console.log(lon)
+
+        //create a buffer
+        cartodb.createLayer(map, {
+                user_name: "jqzhang",
+                type: 'cartodb',
+                sublayers: [{
+                    sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng("+lat+"," +lon+")::geography,1000)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
+                    cartocss: '#yvry{polygon-fill: orange; polygon-opacity: 0.7;line-color: #FFF;line-width: 0.5; line-opacity: 1;}',
+                }]
+            })
+            .addTo(map, 0);
     };
 
 
@@ -249,62 +224,56 @@ div.cartodb-searchbox{
 
 
 
-    // </script>
-
-
+    //
+    </script>
     <!-- ********************************************************************************************************************************************************************************************************* Draw the two gauges *********************************************************************************************************-->
-
     <script>
-
     var gauges = [];
-            
-            function createGauge(name, label, min, max)
-            {
-                var config = 
-                {
-                    size: 120,
-                    label: label,
-                    min: undefined != min ? min : 0,
-                    max: undefined != max ? max : 100,
-                    minorTicks: 5
-                }
-                
-                var range = config.max - config.min;
-                config.yellowZones = [{ from: config.min + range*0.75, to: config.min + range*0.9 }];
-                config.redZones = [{ from: config.min + range*0.9, to: config.max }];
-                
-                gauges[name] = new Gauge(name + "GaugeContainer", config);
-                gauges[name].render();
-            }
-            
-            function createGauges()
-            {
-                createGauge("city", "City");
-                createGauge("district", "District");
-            }
-            
-            function updateGauges()
-            {
-                for (var key in gauges)
-                {
-                    var value = getRandomValue(gauges[key])
-                    gauges[key].redraw(value);
-                }
-            }
-            
-            function getRandomValue(gauge)
-            {
-                var overflow = 0; //10;
-                return gauge.config.min - overflow + (gauge.config.max - gauge.config.min + overflow*2) *  Math.random();
-            }
-            
-            function initialize()
-            {
-                createGauges();
-                setInterval(updateGauges, 5000);
-            }
-        
-  
+
+    function createGauge(name, label, min, max) {
+        var config = {
+            size: 120,
+            label: label,
+            min: undefined != min ? min : 0,
+            max: undefined != max ? max : 100,
+            minorTicks: 5
+        }
+
+        var range = config.max - config.min;
+        config.yellowZones = [{
+            from: config.min + range * 0.75,
+            to: config.min + range * 0.9
+        }];
+        config.redZones = [{
+            from: config.min + range * 0.9,
+            to: config.max
+        }];
+
+        gauges[name] = new Gauge(name + "GaugeContainer", config);
+        gauges[name].render();
+    }
+
+    function createGauges() {
+        createGauge("city", "City");
+        createGauge("district", "District");
+    }
+
+    function updateGauges() {
+        for (var key in gauges) {
+            var value = getRandomValue(gauges[key])
+            gauges[key].redraw(value);
+        }
+    }
+
+    function getRandomValue(gauge) {
+        var overflow = 0; //10;
+        return gauge.config.min - overflow + (gauge.config.max - gauge.config.min + overflow * 2) * Math.random();
+    }
+
+    function initialize() {
+        createGauges();
+        setInterval(updateGauges, 5000);
+    }
     </script>
 </body>
 
