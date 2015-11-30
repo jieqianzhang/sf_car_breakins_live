@@ -109,35 +109,62 @@ div.cartodb-searchbox {
     z-index: -1;
 }
 
-#cityGaugeContainer {
+
+#power-gauge1{
     position: absolute;
     left: 20px;
     top: 180px;
     z-index: 1;
 }
 
-#districtGaugeContainer {
+#power-gauge2{
     position: absolute;
     left: 20px;
     top: 300px;
     z-index: 1;
 }
 
+#power-gauge1 g.pointer {
+    fill: white;
+    stroke:lightgrey;
+}
+
+#power-gauge2 g.pointer {
+    fill: white;
+     stroke:lightgrey;
+}
+
+#power-gauge1 g.label text {
+    text-anchor: middle;
+    font-size: 10px;
+    font-weight: bold;
+    fill: white;
+   /* opacity: .8;*/
+}
+
+#power-gauge2 g.label text {
+    text-anchor: middle;
+    font-size: 10px;
+    font-weight: bold;
+    fill: white;
+   /* opacity: .8;*/
+}
+
 </style>
 <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
-<body onload="initialize()">
+<body>
     <div id='map'></div>
     <div id="bkcard">
         <h2>San Francisco Car Break-ins</h2>
         <!-- <p>By Jieqian Zhang</p> -->
-        <p>Live crime data of the past one year from San Francisco Police Department (updated daily)</p>
+        <p>Live crime data of the past year from San Francisco Police Department (updated daily)</p>
         <div id='menu' onclick="detectUserLocation()">
             <a id="detect">FIND BREAK-INS AROUND YOU</a>
         </div>
-        <div id="cityGaugeContainer"></div>
-        <div id="districtGaugeContainer"></div>
+        <div id="power-gauge1"></div>
+        <div id="power-gauge2"></div>
     </div>
     <script>
     var map = new L.map('map').setView([37.77, -122.41], 12);
@@ -186,8 +213,8 @@ div.cartodb-searchbox {
                 user_name: "jqzhang",
                 type: 'cartodb',
                 sublayers: [{
-                    sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng("+lat+"," +lon+")::geography,1000)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
-                    cartocss: '#yvry{polygon-fill: orange; polygon-opacity: 0.7;line-color: #FFF;line-width: 0.5; line-opacity: 1;}',
+                    sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,1000)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
+                    cartocss: '#yvry{polygon-fill: orange; polygon-opacity: 0.5;line-color: #FFF;line-width: 0.5; line-opacity: 1;}',
                 }]
             })
             .addTo(map, 0);
@@ -220,59 +247,222 @@ div.cartodb-searchbox {
     };
 
 
-
-
-
-
-    //
     </script>
-    <!-- ********************************************************************************************************************************************************************************************************* Draw the two gauges *********************************************************************************************************-->
+
+
+
+    
+    
+
+    <!--  *******************************************************************************************************half gauge**************************************************************************************** -->
     <script>
-    var gauges = [];
-
-    function createGauge(name, label, min, max) {
+    var gauge = function(container, configuration) {
+        var that = {};
         var config = {
-            size: 120,
-            label: label,
-            min: undefined != min ? min : 0,
-            max: undefined != max ? max : 100,
-            minorTicks: 5
+            size: 200,
+            clipWidth: 200,
+            clipHeight: 110,
+            ringInset: 15,
+            ringWidth: 20,
+
+            pointerWidth: 10,
+            pointerTailLength: 5,
+            pointerHeadLengthPercent: 0.9,
+
+            minValue: 0,
+            maxValue: 100,
+
+            minAngle: -90,
+            maxAngle: 90,
+
+            transitionMs: 750,
+
+            majorTicks: 5,
+            labelFormat: d3.format(',g'),
+            labelInset: 10,
+
+            arcColorFn: d3.interpolateHsl(d3.rgb('#feebe2'), d3.rgb('#7a0177'))
+        };
+        var range = undefined;
+        var r = undefined;
+        var pointerHeadLength = undefined;
+        var value = 0;
+
+        var svg = undefined;
+        var arc = undefined;
+        var scale = undefined;
+        var ticks = undefined;
+        var tickData = undefined;
+        var pointer = undefined;
+
+        var donut = d3.layout.pie();
+
+        function deg2rad(deg) {
+            return deg * Math.PI / 180;
         }
 
-        var range = config.max - config.min;
-        config.yellowZones = [{
-            from: config.min + range * 0.75,
-            to: config.min + range * 0.9
-        }];
-        config.redZones = [{
-            from: config.min + range * 0.9,
-            to: config.max
-        }];
-
-        gauges[name] = new Gauge(name + "GaugeContainer", config);
-        gauges[name].render();
-    }
-
-    function createGauges() {
-        createGauge("city", "City");
-        createGauge("district", "District");
-    }
-
-    function updateGauges() {
-        for (var key in gauges) {
-            var value = getRandomValue(gauges[key])
-            gauges[key].redraw(value);
+        function newAngle(d) {
+            var ratio = scale(d);
+            var newAngle = config.minAngle + (ratio * range);
+            return newAngle;
         }
+
+        function configure(configuration) {
+            var prop = undefined;
+            for (prop in configuration) {
+                config[prop] = configuration[prop];
+            }
+
+            range = config.maxAngle - config.minAngle;
+            r = config.size / 2;
+            pointerHeadLength = Math.round(r * config.pointerHeadLengthPercent);
+
+            // a linear scale that maps domain values to a percent from 0..1
+            scale = d3.scale.linear()
+                .range([0, 1])
+                .domain([config.minValue, config.maxValue]);
+
+            ticks = scale.ticks(config.majorTicks);
+            tickData = d3.range(config.majorTicks).map(function() {
+                return 1 / config.majorTicks;
+            });
+
+            arc = d3.svg.arc()
+                .innerRadius(r - config.ringWidth - config.ringInset)
+                .outerRadius(r - config.ringInset)
+                .startAngle(function(d, i) {
+                    var ratio = d * i;
+                    return deg2rad(config.minAngle + (ratio * range));
+                })
+                .endAngle(function(d, i) {
+                    var ratio = d * (i + 1);
+                    return deg2rad(config.minAngle + (ratio * range));
+                });
+        }
+        that.configure = configure;
+
+        function centerTranslation() {
+            return 'translate(' + r + ',' + r + ')';
+        }
+
+        function isRendered() {
+            return (svg !== undefined);
+        }
+        that.isRendered = isRendered;
+
+        function render(newValue) {
+            svg = d3.select(container)
+                .append('svg:svg')
+                .attr('class', 'gauge')
+                .attr('width', config.clipWidth)
+                .attr('height', config.clipHeight);
+
+            var centerTx = centerTranslation();
+
+            var arcs = svg.append('g')
+                .attr('class', 'arc')
+                .attr('transform', centerTx);
+
+            arcs.selectAll('path')
+                .data(tickData)
+                .enter().append('path')
+                .attr('fill', function(d, i) {
+                    return config.arcColorFn(d * i);
+                })
+                .attr('d', arc);
+
+            var lg = svg.append('g')
+                .attr('class', 'label')
+                .attr('transform', centerTx);
+            lg.selectAll('text')
+                .data(ticks)
+                .enter().append('text')
+                .attr('transform', function(d) {
+                    var ratio = scale(d);
+                    var newAngle = config.minAngle + (ratio * range);
+                    return 'rotate(' + newAngle + ') translate(0,' + (config.labelInset - r) + ')';
+                })
+                .text(config.labelFormat);
+
+            var lineData = [
+                [config.pointerWidth / 2, 0],
+                [0, -pointerHeadLength],
+                [-(config.pointerWidth / 2), 0],
+                [0, config.pointerTailLength],
+                [config.pointerWidth / 2, 0]
+            ];
+            var pointerLine = d3.svg.line().interpolate('monotone');
+            var pg = svg.append('g').data([lineData])
+                .attr('class', 'pointer')
+                .attr('transform', centerTx);
+
+            pointer = pg.append('path')
+                .attr('d', pointerLine /*function(d) { return pointerLine(d) +'Z';}*/ )
+                .attr('transform', 'rotate(' + config.minAngle + ')');
+
+            update(newValue === undefined ? 0 : newValue);
+        }
+        that.render = render;
+
+        function update(newValue, newConfiguration) {
+            if (newConfiguration !== undefined) {
+                configure(newConfiguration);
+            }
+            var ratio = scale(newValue);
+            var newAngle = config.minAngle + (ratio * range);
+            pointer.transition()
+                .duration(config.transitionMs)
+                .ease('elastic')
+                .attr('transform', 'rotate(' + newAngle + ')');
+        }
+        that.update = update;
+
+        configure(configuration);
+
+        return that;
+    };
+    </script>
+    <script>
+    function onDocumentReady() {
+        var powerGauge1 = gauge('#power-gauge1', {
+            size: 180,
+            clipWidth: 200,
+            clipHeight: 200,
+            ringWidth: 30,
+            maxValue: 100,
+            transitionMs: 4000,
+        });
+        powerGauge1.render();
+
+        var powerGauge2 = gauge('#power-gauge2', {
+            size: 180,
+            clipWidth: 200,
+            clipHeight: 200,
+            ringWidth: 30,
+            maxValue: 100,
+            transitionMs: 4000,
+        });
+        powerGauge2.render();
+
+        function updateReadings() {
+            // just pump in random data here...
+            powerGauge1.update(Math.random() * 10);
+            powerGauge2.update(Math.random() * 10);
+        }
+
+        // every few seconds update reading values
+        updateReadings();
+        setInterval(function() {
+            updateReadings();
+        }, 5 * 1000);
     }
 
-    function getRandomValue(gauge) {
-        var overflow = 0; //10;
-        return gauge.config.min - overflow + (gauge.config.max - gauge.config.min + overflow * 2) * Math.random();
-    }
-
-    function initialize() {
-        createGauges();
-        setInterval(updateGauges, 5000);
+    if (!window.isLoaded) {
+        window.addEventListener("load", function() {
+            onDocumentReady();
+        }, false);
+    } else {
+        onDocumentReady();
     }
     </script>
 </body>
