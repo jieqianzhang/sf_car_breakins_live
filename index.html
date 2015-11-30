@@ -139,7 +139,6 @@ div.cartodb-searchbox {
     font-size: 10px;
     font-weight: bold;
     fill: white;
-   /* opacity: .8;*/
 }
 
 #power-gauge2 g.label text {
@@ -147,7 +146,6 @@ div.cartodb-searchbox {
     font-size: 10px;
     font-weight: bold;
     fill: white;
-   /* opacity: .8;*/
 }
 
 </style>
@@ -446,8 +444,8 @@ div.cartodb-searchbox {
 
         function updateReadings() {
             // just pump in random data here...
-            powerGauge1.update(Math.random() * 10);
-            powerGauge2.update(Math.random() * 10);
+            powerGauge1.update(Math.random() * 100);
+            powerGauge2.update(Math.random() * 100);
         }
 
         // every few seconds update reading values
