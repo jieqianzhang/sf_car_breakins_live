@@ -299,7 +299,9 @@ path.leaflet-clickable {
         // sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,100)::geometry AS the_geom) SELECT COUNT(cartodb_id) * 10000 /(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
         sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng(37.779272, -122.4193494)::geography,500)::geometry AS the_geom) SELECT COUNT(cartodb_id) * 10000 /(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
             .done(function(data) {
+
             window.loc_crime_rate = data.rows[0].loc_crime_rate;
+            
             });
 
 
