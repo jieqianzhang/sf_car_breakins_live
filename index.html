@@ -8,14 +8,14 @@
     <link rel='stylesheet' href='http://libs.cartocdn.com/cartodb.js/v3/3.11/themes/css/cartodb.css' />
     <script src='http://libs.cartocdn.com/cartodb.js/v3/3.11/cartodb.js'></script>
     <script type="text/javascript" src="http://maps.stamen.com/js/tile.stamen.js?v1.3.0"></script>
-    <link href='https://fonts.googleapis.com/css?family=Roboto:400,500' rel='stylesheet' type='text/css'>
-    <script type="text/javascript" src="gauge.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Roboto:400,300' rel='stylesheet' type='text/css'>
 </head>
 <style>
 body {
     margin: 0;
     padding: 0;
     font-family: 'Roboto', 'Helvetica', sans-serif;
+    font-weight: 300;
 }
 
 #map {
@@ -180,7 +180,7 @@ path.leaflet-clickable {
             type: 'cartodb',
             sublayers: [{
                 sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') SELECT neighborhoods_areas.the_geom_webmercator,neighborhoods_areas.neighborho, count(crimes.the_geom_webmercator)/neighborhoods_areas.area*10000 AS rate FROM neighborhoods_areas, crimes WHERE ST_Contains(neighborhoods_areas.the_geom_webmercator, crimes.the_geom_webmercator) GROUP BY neighborhoods_areas.the_geom_webmercator, neighborhoods_areas.neighborho, neighborhoods_areas.area",
-                cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[rate<=13.4502033352671]{polygon-fill: #7a0177;}#yvry[rate<=7.96100602097922]{polygon-fill: #ae017e;}#yvry[rate<=2.24165005995164]{polygon-fill: #dd3497;}#yvry[rate<=1.48236717330872]{polygon-fill: #f768a1;}#yvry[rate<=0.734503065922202]{polygon-fill: #fa9fb5;}#yvry[rate<=0.620246533008774]{polygon-fill: #fcc5c0;}#yvry[rate<=0.447005419095189]{polygon-fill: #feebe2;}",
+                cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[rate<=13.4502033352671]{polygon-fill: #c51b7d;}#yvry[rate<=7.96100602097922]{polygon-fill: #e9a3c9;}#yvry[rate<=2.24165005995164]{polygon-fill: #fde0ef;}#yvry[rate<=1.48236717330872]{polygon-fill: #f7f7f7;}#yvry[rate<=0.734503065922202]{polygon-fill: #e6f5d0;}#yvry[rate<=0.620246533008774]{polygon-fill: #a1d76a;}#yvry[rate<=0.447005419095189]{polygon-fill: #4d9221;}",
             }]
         })
         .addTo(map)
@@ -189,6 +189,7 @@ path.leaflet-clickable {
             v.show();
             $('#bkcard').append(v.render().el);
             sublayer = layer.getSubLayer(0);
+
         }).on('error', function() {
             //log the error
         });
@@ -208,12 +209,24 @@ path.leaflet-clickable {
         }).addTo(map);
 
         //create a buffer
+    //     cartodb.createLayer(map, {
+    //             user_name: "jqzhang",
+    //             type: 'cartodb',
+    //             sublayers: [{
+    //                 sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,1000)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
+    //                 cartocss: '#yvry{polygon-fill: orange; polygon-opacity: 0.5;line-color: #FFF;line-width: 0.5; line-opacity: 1;}',
+    //             }]
+    //         })
+    //         .addTo(map, 0);
+    // };
+
+
         cartodb.createLayer(map, {
                 user_name: "jqzhang",
                 type: 'cartodb',
                 sublayers: [{
-                    sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,1000)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
-                    cartocss: '#yvry{polygon-fill: orange; polygon-opacity: 0.5;line-color: #FFF;line-width: 0.5; line-opacity: 1;}',
+                    sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer((CDB_LatLng("+lat+","+lon+"))::geography,10000)::geometry AS the_geom) SELECT buffer.the_geom AS the_geom, ST_Transform(buffer.the_geom, 3857) AS the_geom_webmercator, COUNT(cartodb_id)/(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate, 1 as cartodb_id FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom) GROUP BY buffer.the_geom",
+                    cartocss: '#yvry{polygon-fill: orange; polygon-opacity: 0.5;line-color: darkgrey;line-width: 0.5; line-opacity: 1;}',
                 }]
             })
             .addTo(map, 0);
@@ -265,7 +278,7 @@ path.leaflet-clickable {
             ringWidth: 20,
 
             pointerWidth: 10,
-            pointerTailLength: 5,
+            pointerTailLength: 7,
             pointerHeadLengthPercent: 0.9,
 
             minValue: 0,
@@ -276,11 +289,11 @@ path.leaflet-clickable {
 
             transitionMs: 750,
 
-            majorTicks: 5,
+            majorTicks: 7,
             labelFormat: d3.format(',g'),
             labelInset: 10,
 
-            arcColorFn: d3.interpolateHsl(d3.rgb('#feebe2'), d3.rgb('#7a0177'))
+            arcColorFn: ["#4d9221","#a1d76a","#e6f5d0","#f7f7f7","#fde0ef","#e9a3c9","#c51b7d"]
         };
         var range = undefined;
         var r = undefined;
@@ -366,7 +379,7 @@ path.leaflet-clickable {
                 .data(tickData)
                 .enter().append('path')
                 .attr('fill', function(d, i) {
-                    return config.arcColorFn(d * i);
+                    return config.arcColorFn[i];
                 })
                 .attr('d', arc);
 
