@@ -15,6 +15,7 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'Roboto', 'Helvetica', sans-serif;
+   /* font-family: "Garamond", serif;*/
     font-weight: 300;
 }
 
@@ -46,12 +47,19 @@ body {
     height: 100%;
     z-index: 0;
     color: white;
+    overflow-y: scroll;
 }
 
 #bkcard h2 {
     color: white;
     padding-left: 20px;
     margin-bottom: 0px;
+    font-size: 23px
+}
+
+#bkcard h3 {
+    color: white;
+    padding-left: 20px;
 }
 
 #bkcard p {
@@ -59,6 +67,11 @@ body {
     font-size: 12px;
     padding-left: 20px;
     padding-top: 0px;
+    font-size: 14px;
+}
+
+#bkcard #credit{
+    font-size: 12px;
 }
 
 div.cartodb-searchbox {
@@ -69,18 +82,14 @@ div.cartodb-searchbox {
 }
 
 #menu {
-    position: absolute;
-    top: 95px;
-    right: 10px;
-    width: 900px;
-    height: 40px;
     background: transparent;
     z-index: 10;
+    padding-left: 20px;
 }
 
 #menu a {
     margin: 15px 10px 0 0;
-    float: right;
+    float: left;
     vertical-align: baseline;
     width: 125px;
     padding: 10px;
@@ -110,29 +119,24 @@ path.leaflet-clickable {
     z-index: -1;
 }
 
-
-#power-gauge1{
-    position: absolute;
-    left: 20px;
-    top: 180px;
-    z-index: 1;
+#power-gauge1 {
+    padding-left: 20px;
+    margin-top: 50px;
 }
 
-#power-gauge2{
-    position: absolute;
-    left: 20px;
-    top: 300px;
-    z-index: 1;
+#power-gauge2 {
+    padding-left: 20px;
+   
 }
 
 #power-gauge1 g.pointer {
     fill: white;
-    stroke:lightgrey;
+    stroke: lightgrey;
 }
 
 #power-gauge2 g.pointer {
     fill: white;
-     stroke:lightgrey;
+    stroke: lightgrey;
 }
 
 #power-gauge1 g.label text {
@@ -148,7 +152,6 @@ path.leaflet-clickable {
     font-weight: bold;
     fill: white;
 }
-
 </style>
 <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -157,13 +160,14 @@ path.leaflet-clickable {
     <div id='map'></div>
     <div id="bkcard">
         <h2>San Francisco Car Break-ins</h2>
-        <!-- <p>By Jieqian Zhang</p> -->
+        <p id="credit">By Jieqian Zhang</p>
         <p>Live crime data of the past year from San Francisco Police Department (updated daily)</p>
         <div id='menu' onclick="detectUserLocation()">
             <a id="detect">FIND BREAK-INS AROUND YOU</a>
         </div>
         <div id="power-gauge1"></div>
         <div id="power-gauge2"></div>
+        <h3>Methdology</h3>
     </div>
     <script>
     var map = new L.map('map').setView([37.77, -122.41], 12);
@@ -179,94 +183,139 @@ path.leaflet-clickable {
             user_name: "jqzhang",
             type: 'cartodb',
             sublayers: [{
-                sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') SELECT neighborhoods_areas.the_geom_webmercator,neighborhoods_areas.neighborho, count(crimes.the_geom_webmercator)/neighborhoods_areas.area*10000 AS rate FROM neighborhoods_areas, crimes WHERE ST_Contains(neighborhoods_areas.the_geom_webmercator, crimes.the_geom_webmercator) GROUP BY neighborhoods_areas.the_geom_webmercator, neighborhoods_areas.neighborho, neighborhoods_areas.area",
+                sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') SELECT neighborhoods_areas.the_geom_webmercator,neighborhoods_areas.neighborho, count(crimes.the_geom_webmercator) *10000 /neighborhoods_areas.area AS rate FROM neighborhoods_areas, crimes WHERE ST_Contains(neighborhoods_areas.the_geom_webmercator, crimes.the_geom_webmercator) GROUP BY neighborhoods_areas.the_geom_webmercator, neighborhoods_areas.neighborho, neighborhoods_areas.area",
                 cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[rate<=13.4502033352671]{polygon-fill: #c51b7d;}#yvry[rate<=7.96100602097922]{polygon-fill: #e9a3c9;}#yvry[rate<=2.24165005995164]{polygon-fill: #fde0ef;}#yvry[rate<=1.48236717330872]{polygon-fill: #f7f7f7;}#yvry[rate<=0.734503065922202]{polygon-fill: #e6f5d0;}#yvry[rate<=0.620246533008774]{polygon-fill: #a1d76a;}#yvry[rate<=0.447005419095189]{polygon-fill: #4d9221;}",
             }]
         })
         .addTo(map)
         .done(function(layer) {
-            var v = cdb.vis.Overlay.create('search', map.viz, {})
-            v.show();
-            $('#bkcard').append(v.render().el);
-            sublayer = layer.getSubLayer(0);
+            // var v = cdb.vis.Overlay.create('search', map.viz, {})
+            // v.show();
+            // $('#bkcard').append(v.render().el);
+            // sublayer = layer.getSubLayer(0);
 
         }).on('error', function() {
             //log the error
         });
 
+    // calculate the crime rate per m2 in the entire city 
+
+    
+    var city_crime_rate;
+
+    var sql = new cartodb.SQL({
+            user: 'jqzhang',
+            format: 'json'
+        })
 
 
+        sql.execute("SELECT (SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime) * 10000 /(SELECT SUM(area) FROM neighborhoods_areas) AS city_crime_rate")
+            .done(function(data) {
+
+                city_crime_rate = data.rows[0].city_crime_rate;
+
+            });
+
+    
+
+
+
+    var loc_crime_rate;
 
 
     // get geolocation from the web-browser
     function mapToPosition(position) {
-        lon = position.coords.longitude;
-        lat = position.coords.latitude;
+        var lon = position.coords.longitude;
+        var lat = position.coords.latitude;
         // updateQuery();
         map.setView(new L.LatLng(lat, lon), 15);
         new L.CircleMarker([lat, lon], {
             radius: 5
         }).addTo(map);
 
-        //create a buffer
-    //     cartodb.createLayer(map, {
-    //             user_name: "jqzhang",
-    //             type: 'cartodb',
-    //             sublayers: [{
-    //                 sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,1000)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
-    //                 cartocss: '#yvry{polygon-fill: orange; polygon-opacity: 0.5;line-color: #FFF;line-width: 0.5; line-opacity: 1;}',
-    //             }]
-    //         })
-    //         .addTo(map, 0);
-    // };
 
-
+        // create a buffer
         cartodb.createLayer(map, {
                 user_name: "jqzhang",
                 type: 'cartodb',
                 sublayers: [{
-                    sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer((CDB_LatLng("+lat+","+lon+"))::geography,10000)::geometry AS the_geom) SELECT buffer.the_geom AS the_geom, ST_Transform(buffer.the_geom, 3857) AS the_geom_webmercator, COUNT(cartodb_id)/(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate, 1 as cartodb_id FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom) GROUP BY buffer.the_geom",
-                    cartocss: '#yvry{polygon-fill: orange; polygon-opacity: 0.5;line-color: darkgrey;line-width: 0.5; line-opacity: 1;}',
+                    sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,1000)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
+                    cartocss: '#yvry{polygon-fill: darkgrey; polygon-opacity: 0.5;line-color: darkgrey;line-width: 0.5; line-opacity: 1;}',
                 }]
             })
             .addTo(map, 0);
+
+        
+
+
+        // calculate the crime rate within 1 km radius of the user
+
+        var sql = new cartodb.SQL({
+            user: 'jqzhang',
+            format: 'json'
+        })
+
+
+        sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,100)::geometry AS the_geom) SELECT COUNT(cartodb_id) * 10000 /(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
+            .done(function(data) {
+
+                loc_crime_rate = data.rows[0].loc_crime_rate;
+
+                console.log(loc_crime_rate);
+
+
+            });
+
     };
+
+
+
+    // cartodb.createLayer(map, {
+    //         user_name: "jqzhang",
+    //         type: 'cartodb',
+    //         sublayers: [{
+    //             sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,1000)::geometry AS the_geom) SELECT buffer.the_geom AS the_geom_webmercator, ST_Transform(buffer.the_geom, 3857) AS the_geom_webmercator, COUNT(cartodb_id)/(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate, 1 as cartodb_id FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom) GROUP BY buffer.the_geom",
+    //             cartocss: '#yvry{polygon-fill: orange; polygon-opacity: 0.5;line-color: darkgrey;line-width: 0.5; line-opacity: 1;}',
+    //         }]
+    //     })
+    //     .addTo(map, 0);
+    // };
 
 
     function detectUserLocation() {
         if (navigator.geolocation) {
             var timeoutVal = 10 * 1000 * 1000;
             navigator.geolocation.watchPosition(
-                mapToPosition,
-                alertError, {
-                    enableHighAccuracy: true,
-                    timeout: timeoutVal,
-                    maximumAge: 0
-                }
+                mapToPosition
+
+                // alertError, {
+                //     enableHighAccuracy: true,
+                //     timeout: timeoutVal,
+                //     maximumAge: 0
+                // }
             );
         } else {
             alert("Geolocation is not supported by this browser");
         }
 
-        function alertError(error) {
-            var errors = {
-                1: 'Permission denied',
-                2: 'Position unavailable',
-                3: 'Request timeout'
-            };
-            alert("Error: " + errors[error.code]);
-        }
+        //     function alertError(error) {
+        //         var errors = {
+        //             // 1: 'Permission denied',
+        //             // 2: 'Position unavailable',
+        //             // 3: 'Request timeout'
+        //         };
+        //         alert("Error: " + errors[error.code]);
+        //     }
     };
-
-
     </script>
 
 
 
-    
-    
 
-    <!--  *******************************************************************************************************half gauge**************************************************************************************** -->
+
+
+
+    <!--  *******************************************************************************************************draw two half gauges**************************************************************************************** -->
     <script>
     var gauge = function(container, configuration) {
         var that = {};
@@ -293,7 +342,7 @@ path.leaflet-clickable {
             labelFormat: d3.format(',g'),
             labelInset: 10,
 
-            arcColorFn: ["#4d9221","#a1d76a","#e6f5d0","#f7f7f7","#fde0ef","#e9a3c9","#c51b7d"]
+            arcColorFn: ["#4d9221", "#a1d76a", "#e6f5d0", "#f7f7f7", "#fde0ef", "#e9a3c9", "#c51b7d"]
         };
         var range = undefined;
         var r = undefined;
@@ -439,7 +488,7 @@ path.leaflet-clickable {
         var powerGauge1 = gauge('#power-gauge1', {
             size: 180,
             clipWidth: 200,
-            clipHeight: 200,
+            clipHeight: 120,
             ringWidth: 30,
             maxValue: 100,
             transitionMs: 4000,
@@ -449,7 +498,7 @@ path.leaflet-clickable {
         var powerGauge2 = gauge('#power-gauge2', {
             size: 180,
             clipWidth: 200,
-            clipHeight: 200,
+            clipHeight: 120,
             ringWidth: 30,
             maxValue: 100,
             transitionMs: 4000,
