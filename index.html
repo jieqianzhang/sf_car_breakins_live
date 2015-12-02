@@ -59,6 +59,21 @@ body {
 #bkcard h3 {
     color: white;
     padding-left: 20px;
+    font-weight: 400;
+}
+
+#bkcard h4 {
+    color: white;
+    padding-left: 20px;
+    padding-top: 0px;
+}
+
+#bkcard h5 {
+    color: white;
+    font-size: 10px;
+    padding-left: 20px;
+    padding-top: 0px;
+    font-weight: 300;
 }
 
 #bkcard p {
@@ -66,8 +81,10 @@ body {
     font-size: 12px;
     padding-left: 20px;
     padding-top: 0px;
-    font-size: 13px;
+    font-weight: 300;
+    padding-right: 20px;
 }
+
 
 #bkcard #credit {
     font-size: 12px;
@@ -184,15 +201,19 @@ path.leaflet-clickable {
     <div id='map'></div>
     <a id="switch_off" class="button switch_off">HIDE THE CITY LAYER</a>
     <div id="bkcard">
-        <h2>San Francisco Car Break-ins</h2>
+        <h2>IS IT SAFE TO PARK WHERE YOU ARE?</h2>
+        <h4>A Live San Francisco Car Break-ins Crime Map</h4>
         <p id="credit">By Jieqian Zhang</p>
-        <p>Live crime data of the past year from San Francisco Police Department (updated daily)</p>
+        <p>This is the car break-in crimes data derived from San Francisco Police Department Incident Reporting system. The dataset behind the map is updated daily. Even though the dataset is from 2003 to now, this map only visualize the crimes happened in the past year</p>
+        <p><strong>Instructions:</strong> </p>
+        <p>click on the button below to locate where you are. </p>
         <div id='menu' onclick="detectUserLocation()">
             <a id="detect">FIND BREAK-INS AROUND YOU</a>
         </div>
         <div id="power-gauge1"></div>
         <div id="power-gauge2"></div>
         <h3>Methdology</h3>
+        <h5>*Build with CartoDB.js, PostGIS and d3.js.</h5>
     </div>
     <script>
     var map = new L.map('map').setView([37.76, -122.395], 12);
@@ -203,6 +224,13 @@ path.leaflet-clickable {
 
 
     var sublayer;
+
+
+    var sql = new cartodb.SQL({
+            user: 'jqzhang',
+            format: 'json'
+        })
+
 
     cartodb.createLayer(map, {
             user_name: "jqzhang",
@@ -216,7 +244,30 @@ path.leaflet-clickable {
         .done(function(layer) {
             // var v = cdb.vis.Overlay.create('search', map.viz, {})
             // v.show();
-            // $('#bkcard').append(v.render().el);
+            // $('#bkcard').append(v.render().el);    
+
+        //     var cssStyle = [ 
+        //             '#yvry{',
+        //               'polygon-fill: #FFEDA0;',
+        //               'polygon-opacity: 0.8;',
+        //               'line-color: #FFF;',
+        //               'line-width: 0.5;',
+        //               'line-opacity: 1;',
+        //             '}',
+        //             '#yvry [rate <= 12] {',
+        //               'polygon-fill: #F03B20;',
+        //             '}',
+        //             '#yvry [rate <= 6] {',
+        //                'polygon-fill: #FEB24C;',
+        //             '}',
+        //             '#yvry [ rate <= 1] {',
+        //                'polygon-fill: #FFEDA0;',
+        //             '}'
+        //   ].join("\n");
+
+        // layer.setCartoCSS(cssStyle);
+         
+
             $("#switch_off").click(function() {
                 if (this.text == "HIDE THE CITY LAYER") {
                     document.getElementById("switch_off").innerHTML = "SHOW THE CITY LAYER";
@@ -225,12 +276,9 @@ path.leaflet-clickable {
                     document.getElementById("switch_off").innerHTML = "HIDE THE CITY LAYER";
                     layer.getSubLayer(0).show();
                 }
-
             })
-
-
-
-        }).on('error', function() {
+        })
+        .on('error', function() {
             //log the error
         });
 
@@ -241,12 +289,6 @@ path.leaflet-clickable {
     // ************************************************************************************* calculate the crime rate per m2 in the entire city  &&&&&  create a buffer and calculate the crime rate within 1 km radius of the user's location *****************************************************************//
 
 
-
-    var city_crime_rate;
-    var loc_crime_rate;
-
-
-
     // get geolocation from the web-browser
     function mapToPosition(position) {
         console.log("position", position);
@@ -255,7 +297,8 @@ path.leaflet-clickable {
         var lat = position.coords.latitude;
         // map.setView(new L.LatLng(lat, lon), 15);
         map.setView([37.779272, -122.4193494], 15)
-        new L.CircleMarker([lat, lon], {
+        // new L.CircleMarker([lat, lon], {
+        new L.CircleMarker([37.779272, -122.4193494], {
             radius: 5
         }).addTo(map);
 
@@ -267,18 +310,13 @@ path.leaflet-clickable {
                 sublayers: [{
                     // sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,1000)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
                     sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(37.779272, -122.4193494)::geography,500)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
-                    cartocss: '#yvry{polygon-fill: black; polygon-opacity: 0.3;line-color: darkgrey;line-width: 0.5; line-opacity: 1;}',
+                    cartocss: '#yvry{polygon-fill: white; polygon-opacity: 0.2;line-color: black;line-width: 2; line-opacity: 8;}',
                 }]
             })
             .addTo(map, 3);
 
 
         //calculate the crime rate per m2 in the entire city
-        var sql = new cartodb.SQL({
-            user: 'jqzhang',
-            format: 'json'
-        })
-
 
         sql.execute("SELECT (SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime) * 10000 /(SELECT SUM(area) FROM neighborhoods_areas) AS city_crime_rate")
             .done(function(data) {
@@ -395,7 +433,7 @@ path.leaflet-clickable {
             pointerHeadLengthPercent: 0.9,
 
             minValue: 0,
-            maxValue: 100,
+            maxValue: 14,
 
             minAngle: -90,
             maxAngle: 90,
