@@ -253,9 +253,8 @@ path.leaflet-clickable {
 
         var lon = position.coords.longitude;
         var lat = position.coords.latitude;
-        // updateQuery();     
-        map.setView(new L.LatLng(lat, lon), 15);
-        // map.setView([37.779272, -122.4193494], 15)
+        // map.setView(new L.LatLng(lat, lon), 15);
+        map.setView([37.779272, -122.4193494], 15)
         new L.CircleMarker([lat, lon], {
             radius: 5
         }).addTo(map);
@@ -319,7 +318,7 @@ path.leaflet-clickable {
     //     })
     //     .addTo(map, 0);
     // };
-    
+
 
     function alertError(error) {
         mapToPosition({
