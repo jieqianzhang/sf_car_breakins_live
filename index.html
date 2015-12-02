@@ -69,7 +69,7 @@ body {
     font-size: 13px;
 }
 
-#bkcard #credit{
+#bkcard #credit {
     font-size: 12px;
 }
 
@@ -79,7 +79,6 @@ div.cartodb-searchbox {
     left: 20px;
     z-index: 99 !important;
 }
-
 
 #switch_off {
     margin: 15px 10px 0 0;
@@ -99,7 +98,7 @@ div.cartodb-searchbox {
     cursor: pointer;
     background: white;
     box-shadow: 2px 2px 2px 2px darkgrey;
-    outline:none;
+    outline: none;
 }
 
 #switch_off.selected,
@@ -152,7 +151,6 @@ path.leaflet-clickable {
 
 #power-gauge2 {
     padding-left: 20px;
-   
 }
 
 #power-gauge1 g.pointer {
@@ -200,7 +198,7 @@ path.leaflet-clickable {
     var map = new L.map('map').setView([37.76, -122.395], 12);
     // L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
     L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
-        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>' 
+        attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
     }).addTo(map);
 
 
@@ -214,23 +212,23 @@ path.leaflet-clickable {
                 cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[rate<=13.4502033352671]{polygon-fill: #b2182b;}#yvry[rate<=7.96100602097922]{polygon-fill: #ef8a62;}#yvry[rate<=2.24165005995164]{polygon-fill: #fddbc7;}#yvry[rate<=1.48236717330872]{polygon-fill: #f7f7f7;}#yvry[rate<=0.734503065922202]{polygon-fill: #c7eae5;}#yvry[rate<=0.620246533008774]{polygon-fill: #5ab4ac;}#yvry[rate<=0.447005419095189]{polygon-fill: #01665e;}",
             }]
         })
-        .addTo(map,2)
+        .addTo(map, 2)
         .done(function(layer) {
             // var v = cdb.vis.Overlay.create('search', map.viz, {})
             // v.show();
             // $('#bkcard').append(v.render().el);
-            $("#switch_off").click(function(){ 
-                if(this.text == "HIDE THE CITY LAYER"){
-                document.getElementById("switch_off").innerHTML = "SHOW THE CITY LAYER";
-                layer.getSubLayer(0).hide();
-            }else if(this.text == "SHOW THE CITY LAYER"){
-                document.getElementById("switch_off").innerHTML = "HIDE THE CITY LAYER";
-                layer.getSubLayer(0).show();
-            }
+            $("#switch_off").click(function() {
+                if (this.text == "HIDE THE CITY LAYER") {
+                    document.getElementById("switch_off").innerHTML = "SHOW THE CITY LAYER";
+                    layer.getSubLayer(0).hide();
+                } else if (this.text == "SHOW THE CITY LAYER") {
+                    document.getElementById("switch_off").innerHTML = "HIDE THE CITY LAYER";
+                    layer.getSubLayer(0).show();
+                }
 
-            })         
-           
-            
+            })
+
+
 
         }).on('error', function() {
             //log the error
@@ -239,11 +237,11 @@ path.leaflet-clickable {
 
 
 
-    
-     // ************************************************************************************* calculate the crime rate per m2 in the entire city  &&&&&  create a buffer and calculate the crime rate within 1 km radius of the user's location *****************************************************************//
+
+    // ************************************************************************************* calculate the crime rate per m2 in the entire city  &&&&&  create a buffer and calculate the crime rate within 1 km radius of the user's location *****************************************************************//
 
 
-    
+
     var city_crime_rate;
     var loc_crime_rate;
 
@@ -251,11 +249,13 @@ path.leaflet-clickable {
 
     // get geolocation from the web-browser
     function mapToPosition(position) {
+        console.log("position", position);
+
         var lon = position.coords.longitude;
         var lat = position.coords.latitude;
         // updateQuery();     
-        // map.setView(new L.LatLng(lat, lon), 15);
-        map.setView([37.779272, -122.4193494], 15)
+        map.setView(new L.LatLng(lat, lon), 15);
+        // map.setView([37.779272, -122.4193494], 15)
         new L.CircleMarker([lat, lon], {
             radius: 5
         }).addTo(map);
@@ -273,7 +273,7 @@ path.leaflet-clickable {
             })
             .addTo(map, 3);
 
-        
+
         //calculate the crime rate per m2 in the entire city
         var sql = new cartodb.SQL({
             user: 'jqzhang',
@@ -284,15 +284,15 @@ path.leaflet-clickable {
         sql.execute("SELECT (SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime) * 10000 /(SELECT SUM(area) FROM neighborhoods_areas) AS city_crime_rate")
             .done(function(data) {
 
-            window.city_crime_rate = data.rows[0].city_crime_rate;
+                window.city_crime_rate = data.rows[0].city_crime_rate;
 
-            // console.log(city_crime_rate);
+                // console.log(city_crime_rate);
 
             });
 
-        
 
-        
+
+
         // calculate the crime rate within 1 km radius of the user
 
 
@@ -300,8 +300,8 @@ path.leaflet-clickable {
         sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng(37.779272, -122.4193494)::geography,500)::geometry AS the_geom) SELECT COUNT(cartodb_id) * 10000 /(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
             .done(function(data) {
 
-            window.loc_crime_rate = data.rows[0].loc_crime_rate;
-
+                window.loc_crime_rate = data.rows[0].loc_crime_rate;
+                gauge();
             });
 
 
@@ -319,41 +319,65 @@ path.leaflet-clickable {
     //     })
     //     .addTo(map, 0);
     // };
+    
 
+    function alertError(error) {
+        mapToPosition({
+            coords: {
+                latitude: 37.779272,
+                longitude: -122.4193494
+            }
+        });
+    }
+    
 
     function detectUserLocation() {
         if (navigator.geolocation) {
             var timeoutVal = 10 * 1000 * 1000;
-            navigator.geolocation.watchPosition(
-                mapToPosition
-
-                // alertError, {
-                //     enableHighAccuracy: true,
-                //     timeout: timeoutVal,
-                //     maximumAge: 0
-                // }
+            navigator.geolocation.getCurrentPosition(
+                mapToPosition,
+                alertError, {
+                    enableHighAccuracy: true,
+                    timeout: timeoutVal,
+                    maximumAge: 0
+                }
             );
         } else {
             alert("Geolocation is not supported by this browser");
         }
 
-        //     function alertError(error) {
-        //         var errors = {
-        //             // 1: 'Permission denied',
-        //             // 2: 'Position unavailable',
-        //             // 3: 'Request timeout'
-        //         };
-        //         alert("Error: " + errors[error.code]);
-        //     }
+        
     };
+
+
+    // function alertError(error) {
+    //     mapToPosition({
+    //         coords: {
+    //             latitude: 37.779272,
+    //             longitude: -122.4193494
+    //         }
+    //     });
+    // }
+
+
+    // function detectUserLocation() {
+    //     var timeoutVal = 5000;
+    //     if (navigator.geolocation) {           
+    //         console.log("has geo location");
+    //         navigator.geolocation.getCurrentPosition(
+    //             mapToPosition,
+    //             alertError, {
+    //                 enableHighAccuracy: true,
+    //                 timeout: timeoutVal,
+    //                 maximumAge: 0
+    //             }
+    //         );
+    //     } else {
+    //         alert("Geolocation is not supported by this browser");
+    //     }
+    // };
+
     </script>
-
-
-
-
-
-
-
     <!--  *******************************************************************************************************draw two half gauges**************************************************************************************** -->
     <script>
     var gauge = function(container, configuration) {
