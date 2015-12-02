@@ -268,7 +268,7 @@ path.leaflet-clickable {
                 sublayers: [{
                     // sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,1000)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
                     sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(37.779272, -122.4193494)::geography,500)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
-                    cartocss: '#yvry{polygon-fill: black; polygon-opacity: 0.5;line-color: darkgrey;line-width: 0.5; line-opacity: 1;}',
+                    cartocss: '#yvry{polygon-fill: black; polygon-opacity: 0.3;line-color: darkgrey;line-width: 0.5; line-opacity: 1;}',
                 }]
             })
             .addTo(map, 3);
@@ -301,7 +301,7 @@ path.leaflet-clickable {
             .done(function(data) {
 
             window.loc_crime_rate = data.rows[0].loc_crime_rate;
-            
+
             });
 
 
