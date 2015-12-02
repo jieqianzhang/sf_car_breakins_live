@@ -42,7 +42,7 @@ body {
     /*border-radius: 5px;*/
     position: absolute;
     right: 0px;
-    width: 400px;
+    width: 350px;
     height: 100%;
     z-index: 0;
     color: white;
@@ -53,7 +53,7 @@ body {
     color: white;
     padding-left: 20px;
     margin-bottom: 0px;
-    font-size: 28px;
+    font-size: 25px;
 }
 
 #bkcard h3 {
@@ -84,7 +84,6 @@ body {
     font-weight: 300;
     padding-right: 20px;
 }
-
 
 #bkcard #credit {
     font-size: 12px;
@@ -162,12 +161,11 @@ path.leaflet-clickable {
 }
 
 #power-gauge1 {
-    padding-left: 20px;
-    margin-top: 80px;
+    padding-left: 50px;
 }
 
 #power-gauge2 {
-    padding-left: 20px;
+    padding-left: 50px;
 }
 
 #power-gauge1 g.pointer {
@@ -193,6 +191,10 @@ path.leaflet-clickable {
     font-weight: bold;
     fill: white;
 }
+
+#gauges {
+    float: left;
+}
 </style>
 <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
@@ -201,19 +203,24 @@ path.leaflet-clickable {
     <div id='map'></div>
     <a id="switch_off" class="button switch_off">HIDE THE CITY LAYER</a>
     <div id="bkcard">
-        <h2>IS IT SAFE TO PARK WHERE YOU ARE?</h2>
-        <h4>A Live San Francisco Car Break-ins Crime Map</h4>
+        <h2>HOW SAFE IS IT TO PARK?</h2>
+        <h4>A Live San Francisco Car Break-ins Map</h4>
         <p id="credit">By Jieqian Zhang</p>
-        <p>This is the car break-in crimes data derived from San Francisco Police Department Incident Reporting system. The dataset behind the map is updated daily. Even though the dataset is from 2003 to now, this map only visualize the crimes happened in the past year</p>
+        <p>This tool uses car break-in crime data from the San Francisco Police Department Incident Reporting system. The dataset behind the map is updated daily. While the full dataset goes back to 2003, this map is set to visualize data from the past year.</p>
         <p><strong>Instructions:</strong> </p>
-        <p>click on the button below to locate where you are. </p>
+        <p>click on the button below to see break-ins near you.</p>
         <div id='menu' onclick="detectUserLocation()">
-            <a id="detect">FIND BREAK-INS AROUND YOU</a>
+            <a id="detect">FIND BREAK-INS NEAR YOU</a>
         </div>
-        <div id="power-gauge1"></div>
-        <div id="power-gauge2"></div>
-        <h3>Methdology</h3>
-        <h5>*Build with CartoDB.js, PostGIS and d3.js.</h5>
+        <div id="gauges">
+            <h4> Break-ins near you</h4>
+            <div id="power-gauge1"></div>
+            <h4> City-wide average break-ins</h4>
+            <div id="power-gauge2"></div>
+            <h3>Methodology</h3>
+            <p> The "Break-ins near you" map above represents the number of break-ins for a circular area with a 500 meter radius around your current location. The "City-wide average break-ins" number represents the average number of break-ins in all of San Francisco for the equivalent area. We calculate these numbers by counting the number of incidents in the past year from San Francisco Police Department Incident Reporting Data, with the beginning date updating daily. 
+            <h5>*Built with CartoDB.js, PostGIS and d3.js.</h5>
+        </div>
     </div>
     <script>
     var map = new L.map('map').setView([37.76, -122.395], 12);
@@ -227,9 +234,9 @@ path.leaflet-clickable {
 
 
     var sql = new cartodb.SQL({
-            user: 'jqzhang',
-            format: 'json'
-        })
+        user: 'jqzhang',
+        format: 'json'
+    });
 
 
     cartodb.createLayer(map, {
@@ -246,27 +253,27 @@ path.leaflet-clickable {
             // v.show();
             // $('#bkcard').append(v.render().el);    
 
-        //     var cssStyle = [ 
-        //             '#yvry{',
-        //               'polygon-fill: #FFEDA0;',
-        //               'polygon-opacity: 0.8;',
-        //               'line-color: #FFF;',
-        //               'line-width: 0.5;',
-        //               'line-opacity: 1;',
-        //             '}',
-        //             '#yvry [rate <= 12] {',
-        //               'polygon-fill: #F03B20;',
-        //             '}',
-        //             '#yvry [rate <= 6] {',
-        //                'polygon-fill: #FEB24C;',
-        //             '}',
-        //             '#yvry [ rate <= 1] {',
-        //                'polygon-fill: #FFEDA0;',
-        //             '}'
-        //   ].join("\n");
+            //     var cssStyle = [ 
+            //             '#yvry{',
+            //               'polygon-fill: #FFEDA0;',
+            //               'polygon-opacity: 0.8;',
+            //               'line-color: #FFF;',
+            //               'line-width: 0.5;',
+            //               'line-opacity: 1;',
+            //             '}',
+            //             '#yvry [rate <= 12] {',
+            //               'polygon-fill: #F03B20;',
+            //             '}',
+            //             '#yvry [rate <= 6] {',
+            //                'polygon-fill: #FEB24C;',
+            //             '}',
+            //             '#yvry [ rate <= 1] {',
+            //                'polygon-fill: #FFEDA0;',
+            //             '}'
+            //   ].join("\n");
 
-        // layer.setCartoCSS(cssStyle);
-         
+            // layer.setCartoCSS(cssStyle);
+
 
             $("#switch_off").click(function() {
                 if (this.text == "HIDE THE CITY LAYER") {
@@ -297,7 +304,7 @@ path.leaflet-clickable {
         var lat = position.coords.latitude;
         // map.setView(new L.LatLng(lat, lon), 15);
         map.setView([37.779272, -122.4193494], 15)
-        // new L.CircleMarker([lat, lon], {
+            // new L.CircleMarker([lat, lon], {
         new L.CircleMarker([37.779272, -122.4193494], {
             radius: 5
         }).addTo(map);
@@ -324,7 +331,7 @@ path.leaflet-clickable {
                 var city_crime_rate = data.rows[0].city_crime_rate;
                 powerGauge1.update(city_crime_rate);
 
-               
+
 
             });
 
@@ -367,7 +374,7 @@ path.leaflet-clickable {
             }
         });
     }
-    
+
 
     function detectUserLocation() {
         if (navigator.geolocation) {
@@ -384,7 +391,7 @@ path.leaflet-clickable {
             alert("Geolocation is not supported by this browser");
         }
 
-        
+
     };
 
 
@@ -414,8 +421,6 @@ path.leaflet-clickable {
     //         alert("Geolocation is not supported by this browser");
     //     }
     // };
-
-
     </script>
     <!--  *******************************************************************************************************draw two half gauges**************************************************************************************** -->
     <script>
@@ -587,7 +592,6 @@ path.leaflet-clickable {
     };
     </script>
     <script>
-
     var powerGauge1;
     var powerGauge2;
 
@@ -622,7 +626,6 @@ path.leaflet-clickable {
     } else {
         onDocumentReady();
     }
-
     </script>
 </body>
 
