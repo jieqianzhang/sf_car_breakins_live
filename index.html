@@ -202,12 +202,55 @@ path.leaflet-clickable {
 #gauges {
     float: left;
 }
+
+.cartodb-legend{
+    position: absolute;
+    top:0px;
+    left: 180px;
+    width: 100px;
+    background: transparent;
+}
+
+div.cartodb-legend{
+    background:none;
+    border:none;
+    box-shadow: none;
+}
+
+div.cartodb-legend.density li.graph div{
+    width:5px;
+}
+
+
 </style>
 <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 
 <body>
     <div id='map'></div>
+    <!-- <div class='cartodb-legend density'>
+        <ul>
+            <li class="min">
+                Car break-ins density index
+            </li>
+            <li class="graph leg" style="border-radius: 0; border:none">
+                <div class="colors">
+                    <div class="quartile" style="background-color:#FFFFB2"></div>
+                    <div class="quartile" style="background-color:#FECC5C"></div>
+                    <div class="quartile" style="background-color:#FD8D3C"></div>
+                    <div class="quartile" style="background-color:#F03B20"></div>
+                    <div class="quartile" style="background-color:#BD0026"></div>
+                </div>
+                <div class="colors" style="font-weight:normal; text-align: center">
+                    <div class="quartile" style="padding-top: 5px">[0-20]</div>
+                    <div class="quartile" style="padding-top: 5px">[20-40]</div>
+                    <div class="quartile" style="padding-top: 5px">[40-60]</div>
+                    <div class="quartile" style="padding-top: 5px">[60-80]</div>
+                    <div class="quartile" style="padding-top: 5px">[80-100]</div>
+                </div>
+            </li>
+        </ul>
+    </div> -->
     <a id="switch_off" class="button switch_off">HIDE THE CITY LAYER</a>
     <div id="bkcard">
         <h2>HOW SAFE IS IT TO PARK?</h2>
@@ -225,8 +268,8 @@ path.leaflet-clickable {
             <h4> City-wide average break-ins: <span id="city_num"></span></h4>
             <div id="power-gauge1"></div>
             <h3>Methodology</h3>
-            <p> The "Break-ins near you" map above represents the number of break-ins for a circular area with a 282 meter radius (a quarter square kilometer, about the size of 10 blocks in San Francisco) around your current location. The "City-wide average break-ins" number represents the average number of break-ins in all of San Francisco for the equivalent area. We calculate these numbers by counting the number of incidents in the past year from San Francisco Police Department Incident Reporting Data, with the beginning date updating daily. 
-            <h5>*Built with Socrata API, CartoDB.js, PostGIS and d3.js.</h5>
+            <p> The "Break-ins near you" map above represents the number of break-ins for a circular area with a 282 meter radius (a quarter square kilometer, about the size of 10 blocks in San Francisco) around your current location. The "City-wide average break-ins" number represents the average number of break-ins in all of San Francisco for the equivalent area. We calculate these numbers by counting the number of incidents in the past year from San Francisco Police Department Incident Reporting Data, with the beginning date updating daily.
+                <h5>*Built with Socrata API, CartoDB.js, PostGIS and d3.js.</h5>
         </div>
     </div>
     <script>
@@ -251,7 +294,7 @@ path.leaflet-clickable {
             type: 'cartodb',
             sublayers: [{
                 sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') SELECT neighborhoods_areas.the_geom_webmercator,neighborhoods_areas.neighborho, count(crimes.the_geom_webmercator) *10000 /neighborhoods_areas.area AS rate FROM neighborhoods_areas, crimes WHERE ST_Contains(neighborhoods_areas.the_geom_webmercator, crimes.the_geom_webmercator) GROUP BY neighborhoods_areas.the_geom_webmercator, neighborhoods_areas.neighborho, neighborhoods_areas.area",
-                cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[rate<=13.4502033352671]{polygon-fill: #b2182b;}#yvry[rate<=7.96100602097922]{polygon-fill: #ef8a62;}#yvry[rate<=2.24165005995164]{polygon-fill: #fddbc7;}#yvry[rate<=1.48236717330872]{polygon-fill: #f7f7f7;}#yvry[rate<=0.734503065922202]{polygon-fill: #c7eae5;}#yvry[rate<=0.620246533008774]{polygon-fill: #5ab4ac;}#yvry[rate<=0.447005419095189]{polygon-fill: #01665e;}",
+                cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[rate<=13.4502033352671]{polygon-fill: #b2182b;}#yvry[rate<=8]{polygon-fill: #ef8a62;}#yvry[rate<=2]{polygon-fill: #fddbc7;}#yvry[rate<=1]{polygon-fill: #f7f7f7;}#yvry[rate<=0.8]{polygon-fill: #c7eae5;}#yvry[rate<=0.6]{polygon-fill: #5ab4ac;}#yvry[rate<=0.4]{polygon-fill: #01665e;}",
             }]
         })
         .addTo(map, 2)
@@ -280,6 +323,7 @@ path.leaflet-clickable {
             //   ].join("\n");
 
             // layer.setCartoCSS(cssStyle);
+
 
 
             $("#switch_off").click(function() {
@@ -336,7 +380,7 @@ path.leaflet-clickable {
 
                 var city_crime_rate = data.rows[0].city_crime_rate;
                 powerGauge1.update(city_crime_rate);
-                document.getElementById("city_num").innerHTML = Math.round(city_crime_rate * 100)/100;
+                document.getElementById("city_num").innerHTML = Math.round(city_crime_rate * 100) / 100;
 
 
 
@@ -345,7 +389,7 @@ path.leaflet-clickable {
 
 
 
-        // calculate the crime rate within 1 km radius of the user
+        // calculate the crime rate within 282 meter radius of the user
 
 
         // sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,100)::geometry AS the_geom) SELECT COUNT(cartodb_id) * 10000 /(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
@@ -354,7 +398,7 @@ path.leaflet-clickable {
 
                 var loc_crime_rate = data.rows[0].loc_crime_rate;
                 powerGauge2.update(loc_crime_rate);
-                document.getElementById("loc_num").innerHTML = Math.round(loc_crime_rate * 100)/100;
+                document.getElementById("loc_num").innerHTML = Math.round(loc_crime_rate * 100) / 100;
             });
 
 
