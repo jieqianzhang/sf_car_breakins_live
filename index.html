@@ -68,6 +68,13 @@ body {
     padding-top: 0px;
 }
 
+#bkcard span {
+    color: #c51b8a;
+    padding-left: 5px;
+    padding-top: 0px;
+    font-size: 20px;
+}
+
 #bkcard h5 {
     color: white;
     font-size: 10px;
@@ -213,9 +220,9 @@ path.leaflet-clickable {
             <a id="detect">FIND BREAK-INS NEAR YOU</a>
         </div>
         <div id="gauges">
-            <h4> Break-ins near you:</h4>
+            <h4> Break-ins near you: <span id="loc_num"></span></h4>
             <div id="power-gauge2"></div>
-            <h4> City-wide average break-ins:</h4>
+            <h4> City-wide average break-ins: <span id="city_num"></span></h4>
             <div id="power-gauge1"></div>
             <h3>Methodology</h3>
             <p> The "Break-ins near you" map above represents the number of break-ins for a circular area with a 282 meter radius (a quarter square kilometer) around your current location. The "City-wide average break-ins" number represents the average number of break-ins in all of San Francisco for the equivalent area. We calculate these numbers by counting the number of incidents in the past year from San Francisco Police Department Incident Reporting Data, with the beginning date updating daily. 
@@ -303,7 +310,7 @@ path.leaflet-clickable {
         var lon = position.coords.longitude;
         var lat = position.coords.latitude;
         // map.setView(new L.LatLng(lat, lon), 15);
-        map.setView([37.779272, -122.4193494], 15)
+        map.setView([37.779272, -122.4193494], 16)
             // new L.CircleMarker([lat, lon], {
         new L.CircleMarker([37.779272, -122.4193494], {
             radius: 5
@@ -330,6 +337,7 @@ path.leaflet-clickable {
 
                 var city_crime_rate = data.rows[0].city_crime_rate;
                 powerGauge1.update(city_crime_rate);
+                document.getElementById("city_num").innerHTML = Math.round(city_crime_rate * 100)/100;
 
 
 
@@ -347,6 +355,7 @@ path.leaflet-clickable {
 
                 var loc_crime_rate = data.rows[0].loc_crime_rate;
                 powerGauge2.update(loc_crime_rate);
+                document.getElementById("loc_num").innerHTML = Math.round(loc_crime_rate * 100)/100;
             });
 
 
