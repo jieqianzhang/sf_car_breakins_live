@@ -266,7 +266,6 @@ div.cartodb-legend.density li.graph div{
         <h2>HOW SAFE IS IT TO PARK?</h2>
         <h4>A Live San Francisco Car Break-ins Map</h4>
         <p id="credit">By Jieqian Zhang</p>
-        <p>This tool uses car break-in crime data from the San Francisco Police Department Incident Reporting system. The dataset behind the map is updated daily. While the full dataset goes back to 2003, this map is set to visualize data from the past year.</p>
         <p><strong>Instructions:</strong> </p>
         <p>click on the button below to see the break-ins rate compared to the city average</p>
         <h4 id="inside">If you are in San Francisco:</h4>
@@ -282,13 +281,14 @@ div.cartodb-legend.density li.graph div{
             <div id="power-gauge2"></div>
             <!-- <h4> City-wide average break-ins: <span id="city_num"></span></h4>
             <div id="power-gauge1"></div> -->
-            <h3>Methodology</h3>
-            <p> The "Break-ins near you" map above represents the number of break-ins for a circular area with a 100 meter radius (about the size of one block in San Francisco) around your current location, compared with . We calculate these numbers by counting the number of incidents in the past year from San Francisco Police Department Incident Reporting Data, with the beginning date updating daily.
+            <p>This tool uses car break-in crime data from the San Francisco Police Department Incident Reporting system. The dataset behind the map is updated daily. While the full dataset goes back to 2003, this map is set to visualize data from the past year.</p>
+            <!-- <h3>Methodology</h3> -->
+           <!--  <p> The "Break-ins near you" map above represents the number of break-ins for a circular area with a 100 meter radius (about the size of one block in San Francisco) around your current location, compared with . We calculate these numbers by counting the number of incidents in the past year from San Francisco Police Department Incident Reporting Data, with the beginning date updating daily. -->
             <h5>*Built with Socrata API, CartoDB.js, PostGIS and d3.js.</h5>
         </div>
     </div>
     <script>
-    var map = new L.map('map').setView([37.76, -122.395], 12);
+    var map = new L.map('map').setView([37.779272, -122.4193494], 12);
     // L.tileLayer('http://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png', {
     L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
         attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -343,9 +343,9 @@ div.cartodb-legend.density li.graph div{
         var lon = position.coords.longitude;
         var lat = position.coords.latitude;
         // map.setView(new L.LatLng(lat, lon), 15);
-        map.setView([37.782342, -122.409581], 16)
+        map.setView([37.779272, -122.4193494], 17)
             // new L.CircleMarker([lat, lon], {
-        new L.CircleMarker([37.782342, -122.409581], {
+        new L.CircleMarker([37.779272, -122.4193494], {
             radius: 5
         }).addTo(map);
 
@@ -356,7 +356,7 @@ div.cartodb-legend.density li.graph div{
                 type: 'cartodb',
                 sublayers: [{
                     // sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,1000)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
-                    sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(37.782342, -122.409581)::geography,100)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
+                    sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(37.779272, -122.4193494)::geography,100)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
                     cartocss: '#yvry{polygon-fill: white; polygon-opacity: 0.2;line-color: black;line-width: 2; line-opacity: 8;}',
                 }]
             })
