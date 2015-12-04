@@ -137,7 +137,7 @@ div.cartodb-searchbox {
 
 #menu a {
     margin: 15px 10px 0 0;
-    float: left;
+   /* float: left;*/
     vertical-align: baseline;
     width: 125px;
     padding: 10px;
@@ -201,6 +201,7 @@ path.leaflet-clickable {
 
 #gauges {
     float: left;
+    padding-top: 15px;
 }
 
 .cartodb-legend{
@@ -219,6 +220,15 @@ div.cartodb-legend{
 
 div.cartodb-legend.density li.graph div{
     width:5px;
+}
+
+#inside{
+    margin-top: 20px;
+}
+
+#outside{
+    margin-top: 30px;
+    color:#c51b8a;
 }
 
 
@@ -258,12 +268,17 @@ div.cartodb-legend.density li.graph div{
         <p id="credit">By Jieqian Zhang</p>
         <p>This tool uses car break-in crime data from the San Francisco Police Department Incident Reporting system. The dataset behind the map is updated daily. While the full dataset goes back to 2003, this map is set to visualize data from the past year.</p>
         <p><strong>Instructions:</strong> </p>
-        <p>click on the button below to see break-ins near you.</p>
+        <p>click on the button below to see the break-ins rate compared to the city average</p>
+        <h4 id="inside">If you are in San Francisco:</h4>
+        <div id='menu' onclick="">
+            <a id="">FIND BREAK-INS NEAR YOU</a>
+        </div>
+        <h4 id="outside">If you are outside of San Francisco:</h4>
         <div id='menu' onclick="detectUserLocation()">
-            <a id="detect">FIND BREAK-INS NEAR YOU</a>
+            <a id="detect">EXPLORE AROUND THE CIVIC CENTER</a>
         </div>
         <div id="gauges">
-            <h4> Break-ins near you: <span id="loc_num"></span></h4>
+            <h4> The break-ins rate is <span id="loc_num"> _ </span> times of the city average</h4>
             <div id="power-gauge2"></div>
             <!-- <h4> City-wide average break-ins: <span id="city_num"></span></h4>
             <div id="power-gauge1"></div> -->
@@ -294,7 +309,7 @@ div.cartodb-legend.density li.graph div{
             type: 'cartodb',
             sublayers: [{
                 sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') SELECT neighborhoods_areas.the_geom_webmercator,neighborhoods_areas.neighborho, (COUNT(crimes.the_geom_webmercator)/neighborhoods_areas.area) / ((SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime)/(SELECT SUM(area) FROM neighborhoods_areas)) AS index FROM neighborhoods_areas, crimes WHERE ST_Contains(neighborhoods_areas.the_geom_webmercator, crimes.the_geom_webmercator) GROUP BY neighborhoods_areas.the_geom_webmercator, neighborhoods_areas.neighborho, neighborhoods_areas.area",
-                cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[index<=8]{polygon-fill: #b2182b;}#yvry[index<=6]{polygon-fill: #ef6962;}#yvry[index<=4]{polygon-fill: #ed8984;}#yvry[index<=2]{polygon-fill: #fadece;}#yvry[index<=1]{polygon-fill: #d9e9e7;}#yvry[index<=0.5]{polygon-fill: #a9e9e0;}#yvry[index<=0.25]{polygon-fill: #5ab4ac;}#yvry[index<=0.125]{polygon-fill: #01665e;}",
+                cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[index<=8]{polygon-fill: #b2182b;}#yvry[index<=6]{polygon-fill: #ef6962;}#yvry[index<=4]{polygon-fill: #ed8984;}#yvry[index<=2]{polygon-fill: #fadece;}#yvry[index<=1]{polygon-fill: #d9e9e7;}#yvry[index<=0.75]{polygon-fill: #a9e9e0;}#yvry[index<=0.5]{polygon-fill: #5ab4ac;}#yvry[index<=0.25]{polygon-fill: #01665e;}",
             }]
         })
         .addTo(map, 2)
@@ -365,7 +380,7 @@ div.cartodb-legend.density li.graph div{
 
 
         // sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng("+ lat + "," + lon + ")::geography,282)::geometry AS the_geom) SELECT COUNT(cartodb_id)/((SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) * ((SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime)/(SELECT SUM(area) FROM neighborhoods_areas))) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
-        sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng(37.779272, -122.4193494)::geography,282)::geometry AS the_geom) SELECT COUNT(cartodb_id)/((SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) * ((SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime)/(SELECT SUM(area) FROM neighborhoods_areas))) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
+        sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng(37.779272, -122.4193494)::geography,100)::geometry AS the_geom) SELECT COUNT(cartodb_id)/((SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) * ((SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime)/(SELECT SUM(area) FROM neighborhoods_areas))) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
             .done(function(data) {
 
                 var loc_crime_rate = data.rows[0].loc_crime_rate;
@@ -462,7 +477,7 @@ div.cartodb-legend.density li.graph div{
             pointerHeadLengthPercent: 0.9,
 
             minValue: 0,
-            maxValue: 14,
+            maxValue: 8,
 
             minAngle: -90,
             maxAngle: 90,
@@ -512,8 +527,8 @@ div.cartodb-legend.density li.graph div{
 
             // a linear scale that maps domain values to a percent from 0..1
             scale = d3.scale.linear()
-                .range([0, 1])
-                .domain([config.minValue, config.maxValue]);
+                .range([0,1])
+                .domain([0,0.25,0.5,0.75,1,2,4,6,8]);
 
             ticks = scale.ticks(config.majorTicks);
             tickData = d3.range(config.majorTicks).map(function() {
@@ -636,7 +651,7 @@ div.cartodb-legend.density li.graph div{
             clipWidth: 200,
             clipHeight: 120,
             ringWidth: 30,
-            maxValue: 14,
+            maxValue: 8,
             transitionMs: 4000,
         });
         powerGauge2.render();
