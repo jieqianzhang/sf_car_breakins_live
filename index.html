@@ -265,11 +265,11 @@ div.cartodb-legend.density li.graph div{
         <div id="gauges">
             <h4> Break-ins near you: <span id="loc_num"></span></h4>
             <div id="power-gauge2"></div>
-            <h4> City-wide average break-ins: <span id="city_num"></span></h4>
-            <div id="power-gauge1"></div>
+            <!-- <h4> City-wide average break-ins: <span id="city_num"></span></h4>
+            <div id="power-gauge1"></div> -->
             <h3>Methodology</h3>
-            <p> The "Break-ins near you" map above represents the number of break-ins for a circular area with a 282 meter radius (a quarter square kilometer, about the size of 10 blocks in San Francisco) around your current location. The "City-wide average break-ins" number represents the average number of break-ins in all of San Francisco for the equivalent area. We calculate these numbers by counting the number of incidents in the past year from San Francisco Police Department Incident Reporting Data, with the beginning date updating daily.
-                <h5>*Built with Socrata API, CartoDB.js, PostGIS and d3.js.</h5>
+            <p> The "Break-ins near you" map above represents the number of break-ins for a circular area with a 100 meter radius (about the size of one block in San Francisco) around your current location, compared with . We calculate these numbers by counting the number of incidents in the past year from San Francisco Police Department Incident Reporting Data, with the beginning date updating daily.
+            <h5>*Built with Socrata API, CartoDB.js, PostGIS and d3.js.</h5>
         </div>
     </div>
     <script>
@@ -293,39 +293,13 @@ div.cartodb-legend.density li.graph div{
             user_name: "jqzhang",
             type: 'cartodb',
             sublayers: [{
-                sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') SELECT neighborhoods_areas.the_geom_webmercator,neighborhoods_areas.neighborho, count(crimes.the_geom_webmercator) *10000 /neighborhoods_areas.area AS rate FROM neighborhoods_areas, crimes WHERE ST_Contains(neighborhoods_areas.the_geom_webmercator, crimes.the_geom_webmercator) GROUP BY neighborhoods_areas.the_geom_webmercator, neighborhoods_areas.neighborho, neighborhoods_areas.area",
-                cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[rate<=13.4502033352671]{polygon-fill: #b2182b;}#yvry[rate<=8]{polygon-fill: #ef8a62;}#yvry[rate<=2]{polygon-fill: #fddbc7;}#yvry[rate<=1]{polygon-fill: #f7f7f7;}#yvry[rate<=0.8]{polygon-fill: #c7eae5;}#yvry[rate<=0.6]{polygon-fill: #5ab4ac;}#yvry[rate<=0.4]{polygon-fill: #01665e;}",
+                sql: "WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') SELECT neighborhoods_areas.the_geom_webmercator,neighborhoods_areas.neighborho, (COUNT(crimes.the_geom_webmercator)/neighborhoods_areas.area) / ((SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime)/(SELECT SUM(area) FROM neighborhoods_areas)) AS index FROM neighborhoods_areas, crimes WHERE ST_Contains(neighborhoods_areas.the_geom_webmercator, crimes.the_geom_webmercator) GROUP BY neighborhoods_areas.the_geom_webmercator, neighborhoods_areas.neighborho, neighborhoods_areas.area",
+                cartocss: "#yvry{polygon-fill: #FFFFB2; polygon-opacity: 0.8;line-color: #FFF;line-width: 0.5;line-opacity: 1;}#yvry[index<=8]{polygon-fill: #b2182b;}#yvry[index<=6]{polygon-fill: #ef6962;}#yvry[index<=4]{polygon-fill: #ed8984;}#yvry[index<=2]{polygon-fill: #fadece;}#yvry[index<=1]{polygon-fill: #d9e9e7;}#yvry[index<=0.5]{polygon-fill: #a9e9e0;}#yvry[index<=0.25]{polygon-fill: #5ab4ac;}#yvry[index<=0.125]{polygon-fill: #01665e;}",
             }]
         })
         .addTo(map, 2)
         .done(function(layer) {
-            // var v = cdb.vis.Overlay.create('search', map.viz, {})
-            // v.show();
-            // $('#bkcard').append(v.render().el);    
-
-            //     var cssStyle = [ 
-            //             '#yvry{',
-            //               'polygon-fill: #FFEDA0;',
-            //               'polygon-opacity: 0.8;',
-            //               'line-color: #FFF;',
-            //               'line-width: 0.5;',
-            //               'line-opacity: 1;',
-            //             '}',
-            //             '#yvry [rate <= 12] {',
-            //               'polygon-fill: #F03B20;',
-            //             '}',
-            //             '#yvry [rate <= 6] {',
-            //                'polygon-fill: #FEB24C;',
-            //             '}',
-            //             '#yvry [ rate <= 1] {',
-            //                'polygon-fill: #FFEDA0;',
-            //             '}'
-            //   ].join("\n");
-
-            // layer.setCartoCSS(cssStyle);
-
-
-
+            
             $("#switch_off").click(function() {
                 if (this.text == "HIDE THE CITY LAYER") {
                     document.getElementById("switch_off").innerHTML = "SHOW THE CITY LAYER";
@@ -354,9 +328,9 @@ div.cartodb-legend.density li.graph div{
         var lon = position.coords.longitude;
         var lat = position.coords.latitude;
         // map.setView(new L.LatLng(lat, lon), 15);
-        map.setView([37.779272, -122.4193494], 16)
+        map.setView([37.782342, -122.409581], 16)
             // new L.CircleMarker([lat, lon], {
-        new L.CircleMarker([37.779272, -122.4193494], {
+        new L.CircleMarker([37.782342, -122.409581], {
             radius: 5
         }).addTo(map);
 
@@ -367,7 +341,7 @@ div.cartodb-legend.density li.graph div{
                 type: 'cartodb',
                 sublayers: [{
                     // sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,1000)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
-                    sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(37.779272, -122.4193494)::geography,282)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
+                    sql: "SELECT ST_Transform(ST_Buffer(CDB_LatLng(37.782342, -122.409581)::geography,100)::geometry, 3857) AS the_geom_webmercator, 1 AS cartodb_id",
                     cartocss: '#yvry{polygon-fill: white; polygon-opacity: 0.2;line-color: black;line-width: 2; line-opacity: 8;}',
                 }]
             })
@@ -375,25 +349,23 @@ div.cartodb-legend.density li.graph div{
 
 
         //calculate the crime rate per m2 in the entire city
-        sql.execute("SELECT (SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime) * 10000 /(SELECT SUM(area) FROM neighborhoods_areas) AS city_crime_rate")
+        sql.execute("SELECT (SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime)/(SELECT SUM(area) FROM neighborhoods_areas) AS city_crime_rate")
             .done(function(data) {
 
-                var city_crime_rate = data.rows[0].city_crime_rate;
-                powerGauge1.update(city_crime_rate);
-                document.getElementById("city_num").innerHTML = Math.round(city_crime_rate * 100) / 100;
+                // var city_crime_rate = data.rows[0].city_crime_rate;
+                // powerGauge1.update(city_crime_rate);
+                // document.getElementById("city_num").innerHTML = Math.round(city_crime_rate * 100) / 100;
 
 
 
             });
 
 
+        // calculate the (rate/ city_crime_rate) within 100 meter radius of the user
 
 
-        // calculate the crime rate within 282 meter radius of the user
-
-
-        // sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng(" + lat + "," + lon + ")::geography,100)::geometry AS the_geom) SELECT COUNT(cartodb_id) * 10000 /(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
-        sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng(37.779272, -122.4193494)::geography,282)::geometry AS the_geom) SELECT COUNT(cartodb_id) * 10000 /(SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
+        // sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng("+ lat + "," + lon + ")::geography,282)::geometry AS the_geom) SELECT COUNT(cartodb_id)/((SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) * ((SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime)/(SELECT SUM(area) FROM neighborhoods_areas))) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
+        sql.execute("WITH crimes AS (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year'), buffer AS (SELECT ST_Buffer(CDB_LatLng(37.779272, -122.4193494)::geography,282)::geometry AS the_geom) SELECT COUNT(cartodb_id)/((SELECT ST_AREA(buffer.the_geom::geography) FROM buffer) * ((SELECT COUNT(cartodb_id) FROM (SELECT * FROM (SELECT *, to_date(date, 'MM/DD/YYYY') AS incdate FROM yvry) AS crimes WHERE incdate >= now() - interval '1 year') AS year_crime)/(SELECT SUM(area) FROM neighborhoods_areas))) AS loc_crime_rate FROM crimes, buffer WHERE ST_Intersects(crimes.the_geom, buffer.the_geom)")
             .done(function(data) {
 
                 var loc_crime_rate = data.rows[0].loc_crime_rate;
@@ -497,11 +469,11 @@ div.cartodb-legend.density li.graph div{
 
             transitionMs: 750,
 
-            majorTicks: 7,
+            majorTicks: 8,
             labelFormat: d3.format(',g'),
             labelInset: 10,
 
-            arcColorFn: ["#01665e", "#5ab4ac", "#c7eae5", "#f7f7f7", "#fddbc7", "#ef8a62", "#b2182b"]
+            arcColorFn: ["#01665e", "#5ab4ac", "#a9e9e0","#d9e9e7", "#fadece", "#ed8984", "#ef6962", "#b2182b"]
 
         };
         var range = undefined;
@@ -597,13 +569,14 @@ div.cartodb-legend.density li.graph div{
                 .attr('transform', centerTx);
             lg.selectAll('text')
                 .data(ticks)
-                .enter().append('text')
-                .attr('transform', function(d) {
-                    var ratio = scale(d);
-                    var newAngle = config.minAngle + (ratio * range);
-                    return 'rotate(' + newAngle + ') translate(0,' + (config.labelInset - r) + ')';
-                })
-                .text(config.labelFormat);
+                .enter();
+                // .append('text')
+                // .attr('transform', function(d) {
+                //     var ratio = scale(d);
+                //     var newAngle = config.minAngle + (ratio * range);
+                //     return 'rotate(' + newAngle + ') translate(0,' + (config.labelInset - r) + ')';
+                // })
+                // .text(config.labelFormat);
 
             var lineData = [
                 [config.pointerWidth / 2, 0],
@@ -645,18 +618,18 @@ div.cartodb-legend.density li.graph div{
     </script>
     <script>
     var powerGauge1;
-    var powerGauge2;
+    // var powerGauge2;
 
     function onDocumentReady() {
-        powerGauge1 = gauge('#power-gauge1', {
-            size: 180,
-            clipWidth: 200,
-            clipHeight: 120,
-            ringWidth: 30,
-            maxValue: 14,
-            transitionMs: 4000,
-        });
-        powerGauge1.render();
+        // powerGauge1 = gauge('#power-gauge1', {
+        //     size: 180,
+        //     clipWidth: 200,
+        //     clipHeight: 120,
+        //     ringWidth: 30,
+        //     maxValue: 14,
+        //     transitionMs: 4000,
+        // });
+        // powerGauge1.render();
 
         powerGauge2 = gauge('#power-gauge2', {
             size: 180,
