@@ -229,24 +229,25 @@ div.cartodb-legend.density li.graph div{
 }
  
 #bkcard h4{
-    font-size: 14px;
+    font-size: 12px;
 }
 
 #inside, #outside, #detect{
     display:none;
 }
 
-#subtitle{
+#bkcard #subtitle{
     margin-bottom: 0px;
     font-size: 16px;
 }
 
 #credit{
-    margin-bottom: 2px; 
+   display: none;
 }
 
+
 #gauges{
-    padding-top: 0px;
+    padding-top: 20px;
 }
         }
 
