@@ -3,7 +3,8 @@
 
 <head>
     <meta charset=urf-8/>
-    <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=yes' />
+  <!--   <meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=yes' /> -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>San Francisco Car Break-ins Crime Map</title>
     <link rel='stylesheet' href='http://libs.cartocdn.com/cartodb.js/v3/3.11/themes/css/cartodb.css' />
     <link rel="stylesheet" type="text/css" href="main.css">
@@ -17,34 +18,11 @@
 
 <body>
     <div id='map'></div>
-    <!-- <div class='cartodb-legend density'>
-        <ul>
-            <li class="min">
-                Car break-ins density index
-            </li>
-            <li class="graph leg" style="border-radius: 0; border:none">
-                <div class="colors">
-                    <div class="quartile" style="background-color:#FFFFB2"></div>
-                    <div class="quartile" style="background-color:#FECC5C"></div>
-                    <div class="quartile" style="background-color:#FD8D3C"></div>
-                    <div class="quartile" style="background-color:#F03B20"></div>
-                    <div class="quartile" style="background-color:#BD0026"></div>
-                </div>
-                <div class="colors" style="font-weight:normal; text-align: center">
-                    <div class="quartile" style="padding-top: 5px">[0-20]</div>
-                    <div class="quartile" style="padding-top: 5px">[20-40]</div>
-                    <div class="quartile" style="padding-top: 5px">[40-60]</div>
-                    <div class="quartile" style="padding-top: 5px">[60-80]</div>
-                    <div class="quartile" style="padding-top: 5px">[80-100]</div>
-                </div>
-            </li>
-        </ul>
-    </div> -->
     <a id="switch_off" class="button switch_off">HIDE THE CITY LAYER</a>
     <div id="bkcard">
         <h2>HOW SAFE IS IT TO PARK?</h2>
-        <h4>A Live San Francisco Car Break-ins Map</h4>
-        <p id="credit">By Jieqian Zhang</p>
+        <h4 id="subtitle">A Live San Francisco Car Break-ins Map</h4>
+        <h5 id="credit">By Jieqian Zhang</h5>
         <p><strong>Instructions:</strong> </p>
         <p>click on the button below to see the break-ins rate compared to the city average</p>
         <h4 id="inside">If you are in San Francisco:</h4>
@@ -71,7 +49,7 @@
 
 
     <script>
-    var map = new L.map('map').setView([37.779272, -122.4193494], 12);
+    var map = new L.map('map').setView([37.759272, -122.3593494], 12);
    
 
     L.tileLayer('http://stamen-tiles-{s}.a.ssl.fastly.net/toner-lite/{z}/{x}/{y}.png', {
@@ -452,6 +430,22 @@
     } else {
         onDocumentReady();
     }
+
+    </script>
+
+    <script>
+    function responsive() {
+     width = $(window).width();
+     height = $(window).height();
+    if (width < 768) {
+        map.setView([37.689272, -122.3593494], 11);
+    } else if (width > 768) {
+        map.setView([37.759272, -122.3593494], 12);
+    }
+ }
+
+   $(window).ready(responsive).resize(responsive);
+
     </script>
 </body>
 

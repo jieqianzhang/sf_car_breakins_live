@@ -27,10 +27,6 @@ body {
 #bkcard {
     background-color: rgba(0, 0, 0, .8);
     /*border-radius: 5px;*/
-    position: absolute;
-    right: 0px;
-    width: 350px;
-    height: 100%;
     z-index: 0;
     color: white;
     overflow-y: scroll;
@@ -157,7 +153,8 @@ path.leaflet-clickable {
 }
 
 #power-gauge2 {
-    padding-left: 80px;
+    padding-left: auto;
+    padding-right: auto;
 }
 
 #power-gauge1 g.pointer {
@@ -217,3 +214,38 @@ div.cartodb-legend.density li.graph div{
     margin-top: 30px;
     color:#c51b8a;
 }
+
+@media (max-width:767px) {
+
+#bkcard{
+    position:absolute;
+    bottom:0px;
+    height:260px;
+    width:100%;
+}
+
+#bkcard h2,p {
+    display:none;
+}
+ 
+#bkcard h4{
+    font-size: 14px;
+}
+
+#inside, #outside, #detect{
+    display:none;
+}
+        }
+
+
+@media (min-width:768px) {
+
+#bkcard{
+    float:right;
+    width: 350px;
+    height: 100%;
+}
+
+        
+        }
+
