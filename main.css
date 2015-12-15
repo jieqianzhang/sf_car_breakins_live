@@ -242,13 +242,27 @@ div.cartodb-legend.density li.graph div{
 }
 
 #credit{
-   display: none;
+    margin-top: 3px;
+  /*  margin-bottom: 5px;*/
 }
 
 
 #gauges{
-    padding-top: 20px;
+    padding-top: 10px;
 }
+/*
+#title1{
+    display: inline;
+    text-transform: uppercase;
+}
+
+#title2{
+    display: inline;
+    text-transform: uppercase;
+}*/
+
+
+
         }
 
 
@@ -259,6 +273,20 @@ div.cartodb-legend.density li.graph div{
     width: 350px;
     height: 100%;
 }
+
+/*
+#title1, #title2{
+    display: inline;
+    text-transform: uppercase;
+
+}
+
+.cartodb-legend{
+    top:80%;
+    left:0px;
+}
+*/
+
 
         
         }
