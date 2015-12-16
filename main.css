@@ -221,7 +221,7 @@ div.cartodb-legend.density li.graph div{
 #bkcard{
     position:absolute;
     right:0px;
-    width: 350px;
+    width: 15%;
     overflow-y: scroll;
 }
         
