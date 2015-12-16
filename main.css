@@ -10,6 +10,7 @@ body {
     top: 0;
     bottom: 0;
     width: 100%;
+    overflow-y:hidden;
 }
 
 #control {
@@ -26,8 +27,10 @@ body {
 
 #bkcard {
     background-color: rgba(0, 0, 0, .8);
+    /*border-radius: 5px;*/
     z-index: 0;
     color: white;
+    overflow-y: scroll;
 }
 
 #bkcard h2 {
@@ -213,17 +216,50 @@ div.cartodb-legend.density li.graph div{
     color:#c51b8a;
 }
 
+@media (max-width:767px) {
+
+#bkcard{
+    position:absolute;
+    bottom:0px;
+    height:260px;
+    width:100%;
 }
 
+#bkcard h2,p {
+    display:none;
+}
+ 
+#bkcard h4{
+    font-size: 12px;
+}
+
+#inside, #outside, #detect{
+    display:none;
+}
+
+#bkcard #subtitle{
+    margin-bottom: 0px;
+    font-size: 16px;
+}
+
+#credit{
+    margin-top: 3px;
+    margin-bottom: 5px;
+}
+
+
+#gauges{
+    padding-top: 10px;
+}
+
+}
 
 @media (min-width:768px) {
 
 #bkcard{
     position:absolute;
     right:0px;
-    width: 15%;
-    overflow-y: scroll;
-}
-        
+    width: 350px;
+}       
         }
 
