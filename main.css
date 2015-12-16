@@ -30,7 +30,6 @@ body {
     /*border-radius: 5px;*/
     z-index: 0;
     color: white;
-    overflow-y: scroll;
 }
 
 #bkcard h2 {
@@ -261,6 +260,7 @@ div.cartodb-legend.density li.graph div{
     float:right;
     width: 350px;
     height: 100%;
+    overflow-y: scroll;
 }
         
         }
