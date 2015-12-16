@@ -252,9 +252,9 @@ div.cartodb-legend.density li.graph div{
 }
 
 
-/*#gauges{*/
-/*    padding-top: 10px;*/
-/*}*/
+#gauges{
+    padding-top: 0px;
+}
 
 }
 
