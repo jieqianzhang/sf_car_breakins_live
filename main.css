@@ -260,6 +260,7 @@ div.cartodb-legend.density li.graph div{
     position:absolute;
     right:0px;
     width: 350px;
+    height:100%;
 }       
         }
 
