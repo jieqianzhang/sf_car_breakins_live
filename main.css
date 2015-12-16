@@ -215,49 +215,14 @@ div.cartodb-legend.density li.graph div{
     color:#c51b8a;
 }
 
-/*@media (max-width:767px) {*/
-
-/*#bkcard{*/
-/*    position:absolute;*/
-/*    bottom:0px;*/
-/*    height:260px;*/
-/*    width:100%;*/
-/*}*/
-
-/*#bkcard h2,p {*/
-/*    display:none;*/
-/*}*/
- 
-/*#bkcard h4{*/
-/*    font-size: 12px;*/
-/*}*/
-
-/*#inside, #outside, #detect{*/
-/*    display:none;*/
-/*}*/
-
-/*#bkcard #subtitle{*/
-/*    margin-bottom: 0px;*/
-/*    font-size: 16px;*/
-/*}*/
-
-/*#credit{*/
-/*    margin-top: 3px;*/
-  /*  margin-bottom: 5px;*/
-/*}*/
-
-
-/*#gauges{*/
-/*    padding-top: 10px;*/
-/*}*/
-
-/*}*/
+}
 
 
 @media (min-width:768px) {
 
 #bkcard{
-    float:right;
+    position:absolute;
+    right:0px;
     width: 350px;
     height: 100%;
     overflow-y: scroll;
