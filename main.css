@@ -250,23 +250,8 @@ div.cartodb-legend.density li.graph div{
 #gauges{
     padding-top: 10px;
 }
-<<<<<<< HEAD
-/*
-#title1{
-    display: inline;
-    text-transform: uppercase;
+
 }
-
-#title2{
-    display: inline;
-    text-transform: uppercase;
-}*/
-
-
-
-=======
->>>>>>> origin/gh-pages
-        }
 
 
 @media (min-width:768px) {
@@ -276,21 +261,6 @@ div.cartodb-legend.density li.graph div{
     width: 350px;
     height: 100%;
 }
-
-/*
-#title1, #title2{
-    display: inline;
-    text-transform: uppercase;
-
-}
-
-.cartodb-legend{
-    top:80%;
-    left:0px;
-}
-*/
-
-
         
         }
 
